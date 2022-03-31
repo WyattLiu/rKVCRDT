@@ -69,10 +69,8 @@ def isHelp(args):
 
 def helpMessage():
     string = ("  Go to ../RAC and follow the instruction to boot up replication server  \n\n" +
-        "  [For Example] python -m http.server 8080 --bind 127.0.0.1 \n\n" +
-        "  and in this folder, run: \n\n" +
-        "  python client.py 127.0.0.1:<port number> \n\n" + 
-        "  [For Example] python client.py 127.0.0.1:<port number> \n")
+        "  python3 client.py 127.0.0.1:<port number> \n\n" + 
+        "  [For Example] python3 client.py 127.0.0.1:<port number> \n")
     print(string)
 
 if __name__ == "__main__":
@@ -81,7 +79,9 @@ if __name__ == "__main__":
 
     else:
         if len(sys.argv) < 2:
+            helpMessage()
             raise ValueError('wrong arg')
+            
     
         # gc <key> <action> [value]
         address = sys.argv[1]
