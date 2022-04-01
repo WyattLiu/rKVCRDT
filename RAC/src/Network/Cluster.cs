@@ -26,7 +26,10 @@ namespace RAC.Network
 
         public string address;
 
+        // TODO: client
         public int port;
+
+        public int clusterPort;
 
         public bool isSelf = false;
 
@@ -48,12 +51,14 @@ namespace RAC.Network
             
             this.address = address;
 
-            if (port <= 0 || port > 65535)
+            if (port <= 0 || port > 65535 - 3000)
                 ERROR("Node " + nodeid + " has an incorrect port number of " + port, new ArgumentOutOfRangeException());
 
-            this.port = port;
 
-            this.connection = new NodeCommClient(IPAddress.Parse(address), port);
+            this.port = port;
+            this.clusterPort = port + 3000;
+
+            this.connection = new NodeCommClient(IPAddress.Parse(address), this.clusterPort);
         }
 
         public override string ToString() 
@@ -111,7 +116,7 @@ namespace RAC.Network
             if (!this.connection.Connect())
             {
                 this.connection = null;
-                ERROR("Cluster node " + this.address + ":" + this.port + " connection failed");
+                ERROR("Cluster node " + this.address + ":" + this.clusterPort + " connection failed");
             }
         }
 
@@ -195,7 +200,7 @@ namespace RAC.Network
                     n.connect();
 
                 if (n.connection is null)
-                    ERROR("Broadcast failed to cluster node " + n.address + ":" + n.port);
+                    ERROR("Broadcast failed to cluster node " + n.address + ":" + n.clusterPort);
                 else
                 {
                     n.send(msg);

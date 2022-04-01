@@ -66,7 +66,7 @@ namespace RAC.Network
         }
     }
 
-
+    // TODO: change this to clientBinding
     public class TcpHandler : TcpServer
     {
         public BufferBlock<MessagePacket> reqQueue;
@@ -93,12 +93,16 @@ namespace RAC.Network
         }
     }
 
-
     public class Server
     {
 
+        // TODO: change this to client
         public BufferBlock<MessagePacket> reqQueue;
         public BufferBlock<MessagePacket> respQueue;
+
+        public BufferBlock<MessagePacket> clusterReqQueue;
+        public BufferBlock<MessagePacket> ClusterRespQueue;
+
 
         // no need for thread safety cuz one only write and the other only read
         public Cluster cluster = Global.cluster;
@@ -106,8 +110,15 @@ namespace RAC.Network
         public TcpHandler tcpHandler;
 
         public IPAddress address { get; }
+        // TODO: change this to clientBinding
         public int port { get; }
+        // TODO: change this to clientBinding
         public TcpHandler server;
+
+        public int clusterPort { get; }
+
+        // ClusterListener - interserver communication
+        public TcpHandler clusterListener; 
 
 
         // threshold for stop reading if still no starter detected
@@ -117,20 +128,15 @@ namespace RAC.Network
         {
             this.address = IPAddress.Parse(node.address);
             this.port = node.port;
+            this.clusterPort = node.clusterPort;
 
+            // TODO: change this to clients
             this.reqQueue = new BufferBlock<MessagePacket>();
             this.respQueue = new BufferBlock<MessagePacket>();
+
+            this.clusterReqQueue = new BufferBlock<MessagePacket>();
+            this.ClusterRespQueue = new BufferBlock<MessagePacket>(); 
         }
-
-        public void start()
-        {
-
-            this.server = new TcpHandler(this.address, this.port, ref this.reqQueue, ref this.respQueue);
-
-        }
-
-
-
 
         public async Task HandleRequestAsync()
         {
@@ -201,11 +207,14 @@ namespace RAC.Network
         {
             try
             {
-                // TcpListener server = new TcpListener(port);
+                // TODO: change this to client
                 this.server = new TcpHandler(this.address, this.port, ref this.reqQueue, ref this.respQueue);
 
+                this.clusterListener = new TcpHandler(this.address, this.clusterPort, ref this.clusterReqQueue, ref this.ClusterRespQueue);
+
                 // Start listening for client requests.
-                server.Start();
+                this.server.Start();
+                this.clusterListener.Start();
 
                 LOG("Server Started");
 

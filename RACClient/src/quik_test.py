@@ -3,6 +3,8 @@ from client import *
 from startservers import *
 import random
 
+build_server()
+time.sleep(5)
 addresses = start_server(3)
 
 def split_ipport(address):
