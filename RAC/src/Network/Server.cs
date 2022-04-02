@@ -237,6 +237,9 @@ namespace RAC.Network
                 server.Stop();
                 this.reqQueue.Complete();
                 this.respQueue.Complete();
+
+                this.clusterReqQueue.Complete();
+                this.clusterReqQueue.Complete();
             }
         }
 

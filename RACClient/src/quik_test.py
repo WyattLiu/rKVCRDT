@@ -48,9 +48,12 @@ def PNC_Test():
         server_id = i % 3
         num = random.randint(-10, 10)
         if (num < 0):
-            pnc[server_id].dec("test", abs(num))
+            res = pnc[server_id].dec("test", abs(num))
         else:
-            pnc[server_id].inc("test", num)
+            res = pnc[server_id].inc("test", num)
+
+        if (res == 'F'):
+            break
 
         result += num
 
