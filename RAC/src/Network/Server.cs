@@ -95,11 +95,10 @@ namespace RAC.Network
 
     public class Server
     {
-
-        // TODO: change this to client
-        public BufferBlock<MessagePacket> reqQueue;
-        public BufferBlock<MessagePacket> respQueue;
-
+        // msg queue to handle client request
+        public BufferBlock<MessagePacket> clientReqQueue;
+        public BufferBlock<MessagePacket> clientRespQueue;
+         // msg queue to handle cluster comm
         public BufferBlock<MessagePacket> clusterReqQueue;
         public BufferBlock<MessagePacket> ClusterRespQueue;
 
@@ -110,12 +109,10 @@ namespace RAC.Network
         public TcpHandler tcpHandler;
 
         public IPAddress address { get; }
-        // TODO: change this to clientBinding
-        public int port { get; }
-        // TODO: change this to clientBinding
+        public int clientCommPort { get; }
         public TcpHandler server;
 
-        public int clusterPort { get; }
+        public int clusterCommPort { get; }
 
         // ClusterListener - interserver communication
         public TcpHandler clusterListener;
@@ -127,12 +124,11 @@ namespace RAC.Network
         public Server(Node node)
         {
             this.address = IPAddress.Parse(node.address);
-            this.port = node.port;
-            this.clusterPort = node.clusterPort;
+            this.clientCommPort = node.port;
+            this.clusterCommPort = node.clusterPort;
 
-            // TODO: change this to clients
-            this.reqQueue = new BufferBlock<MessagePacket>();
-            this.respQueue = new BufferBlock<MessagePacket>();
+            this.clientReqQueue = new BufferBlock<MessagePacket>();
+            this.clientRespQueue = new BufferBlock<MessagePacket>();
 
             this.clusterReqQueue = new BufferBlock<MessagePacket>();
             this.ClusterRespQueue = new BufferBlock<MessagePacket>();
@@ -206,9 +202,9 @@ namespace RAC.Network
             try
             {
                 // TODO: change this to client
-                this.server = new TcpHandler(this.address, this.port, ref this.reqQueue, ref this.respQueue);
+                this.server = new TcpHandler(this.address, this.clientCommPort, ref this.clientReqQueue, ref this.clientRespQueue);
 
-                this.clusterListener = new TcpHandler(this.address, this.clusterPort, ref this.clusterReqQueue, ref this.ClusterRespQueue);
+                this.clusterListener = new TcpHandler(this.address, this.clusterCommPort, ref this.clusterReqQueue, ref this.ClusterRespQueue);
 
                 // Start listening for client requests.
                 this.server.Start();
@@ -233,8 +229,8 @@ namespace RAC.Network
                 LOG("Stopped listening");
                 this.cluster.DisconnectAll();
                 server.Stop();
-                this.reqQueue.Complete();
-                this.respQueue.Complete();
+                this.clientReqQueue.Complete();
+                this.clientRespQueue.Complete();
 
                 this.clusterReqQueue.Complete();
                 this.clusterReqQueue.Complete();

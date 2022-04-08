@@ -83,7 +83,7 @@ namespace RAC.Network
 
                         // TODO: fix this part
                         if (src == MsgSrc.client)
-                            Global.server.reqQueue.Post(msg);
+                            Global.server.clientReqQueue.Post(msg);
                         else if (src == MsgSrc.server)
                             Global.server.clusterReqQueue.Post(msg);
 
