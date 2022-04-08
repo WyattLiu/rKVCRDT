@@ -96,11 +96,8 @@ namespace RAC.Network
     public class Server
     {
         // msg queue to handle client request
-        public BufferBlock<MessagePacket> clientReqQueue;
-        public BufferBlock<MessagePacket> clientRespQueue;
-         // msg queue to handle cluster comm
-        public BufferBlock<MessagePacket> clusterReqQueue;
-        public BufferBlock<MessagePacket> ClusterRespQueue;
+        public BufferBlock<MessagePacket> reqQueue;
+        public BufferBlock<MessagePacket> respQueue;
 
 
         // no need for thread safety cuz one only write and the other only read
@@ -127,11 +124,9 @@ namespace RAC.Network
             this.clientCommPort = node.port;
             this.clusterCommPort = node.clusterPort;
 
-            this.clientReqQueue = new BufferBlock<MessagePacket>();
-            this.clientRespQueue = new BufferBlock<MessagePacket>();
+            this.reqQueue = new BufferBlock<MessagePacket>();
+            this.respQueue = new BufferBlock<MessagePacket>();
 
-            this.clusterReqQueue = new BufferBlock<MessagePacket>();
-            this.ClusterRespQueue = new BufferBlock<MessagePacket>();
         }
 
         public async Task HandleRequestAsync(BufferBlock<MessagePacket> queue)
@@ -202,9 +197,9 @@ namespace RAC.Network
             try
             {
                 // TODO: change this to client
-                this.server = new TcpHandler(this.address, this.clientCommPort, ref this.clientReqQueue, ref this.clientRespQueue);
+                this.server = new TcpHandler(this.address, this.clientCommPort, ref this.reqQueue, ref this.respQueue);
 
-                this.clusterListener = new TcpHandler(this.address, this.clusterCommPort, ref this.clusterReqQueue, ref this.ClusterRespQueue);
+                this.clusterListener = new TcpHandler(this.address, this.clusterCommPort, ref this.reqQueue, ref this.respQueue);
 
                 // Start listening for client requests.
                 this.server.Start();
@@ -229,11 +224,11 @@ namespace RAC.Network
                 LOG("Stopped listening");
                 this.cluster.DisconnectAll();
                 server.Stop();
-                this.clientReqQueue.Complete();
-                this.clientRespQueue.Complete();
+                this.reqQueue.Complete();
+                this.respQueue.Complete();
 
-                this.clusterReqQueue.Complete();
-                this.clusterReqQueue.Complete();
+                // this.clusterReqQueue.Complete();
+                // this.clusterReqQueue.Complete();
             }
         }
 

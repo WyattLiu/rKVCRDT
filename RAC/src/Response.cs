@@ -65,7 +65,7 @@ namespace RAC
 
                 MessagePacket msg = new MessagePacket(content, dest);
                 msg.connection = to;    
-                Global.server.clientRespQueue.Post(msg);
+                Global.server.respQueue.Post(msg);
             }
 
 
