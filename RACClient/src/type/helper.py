@@ -2,10 +2,10 @@ import sys
 
 num_fields = 2
 head_len = 1 + num_fields * 4
-typePrefix = "TYPE:"
-uidPrefix = "UID:"
-opPrefix = "OP:"
-paramPrefix = "P:"
+typePrefix = "t&"
+uidPrefix = "u&"
+opPrefix = "o&"
+paramPrefix = "p&"
 
 def msg_construct(server, msg: str):
 
