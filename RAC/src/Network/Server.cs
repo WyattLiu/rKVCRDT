@@ -46,7 +46,7 @@ namespace RAC.Network
             Array.Copy(buffer, (int)offset, temp, 0, (int)size);
             cache.AddRange(temp);
 
-            DEBUG("Receiving the following message with length: " + size + " bytes \n" + cache.ToString());
+            DEBUG("Receiving the following message with length: " + size + " bytes \n" + System.Text.Encoding.Default.GetString(cache.ToArray()));
             int handledSize = MessagePacket.ParseReceivedMessage(cache.ToArray(), this);
 
             if (handledSize == cache.Count)
@@ -118,7 +118,7 @@ namespace RAC.Network
         public int clusterPort { get; }
 
         // ClusterListener - interserver communication
-        public TcpHandler clusterListener; 
+        public TcpHandler clusterListener;
 
 
         // threshold for stop reading if still no starter detected
@@ -135,15 +135,15 @@ namespace RAC.Network
             this.respQueue = new BufferBlock<MessagePacket>();
 
             this.clusterReqQueue = new BufferBlock<MessagePacket>();
-            this.ClusterRespQueue = new BufferBlock<MessagePacket>(); 
+            this.ClusterRespQueue = new BufferBlock<MessagePacket>();
         }
 
-        public async Task HandleRequestAsync()
+        public async Task HandleRequestAsync(BufferBlock<MessagePacket> queue)
         {
 
-            while (await reqQueue.OutputAvailableAsync())
+            while (await queue.OutputAvailableAsync())
             {
-                MessagePacket msg = reqQueue.Receive(); ;
+                MessagePacket msg = queue.Receive(); ;
                 try
                 {
                     DEBUG("Resparing response");
@@ -168,38 +168,36 @@ namespace RAC.Network
 
 
 
-        public async Task SendResponseAsync()
+        public async Task SendResponseAsync(BufferBlock<MessagePacket> queue)
         {
-            ;
-
-            while (await this.respQueue.OutputAvailableAsync())
+            while (await queue.OutputAvailableAsync())
             {
-                MessagePacket msg = this.respQueue.Receive();
+                MessagePacket msg = queue.Receive();
 
-                       // broadcast
-                        if (msg.to == Dest.broadcast)
-                        {
-                            this.cluster.BroadCast(msg);
-                        }
-                        // reply to client, if connection found to be ended, do nothing
-                        else if (msg.to == Dest.client)
-                        {
-                            if (msg.connection.IsConnected)
-                            {
+                // broadcast
+                if (msg.to == Dest.broadcast)
+                {
+                    this.cluster.BroadCast(msg);
+                }
+                // reply to client, if connection found to be ended, do nothing
+                else if (msg.to == Dest.client)
+                {
+                    if (msg.connection.IsConnected)
+                    {
 
-                                byte[] data = msg.Serialize();
-                                msg.connection.SendAsync(data);
-                            }
-                            else
-                            {
-                                WARNING("Connection to client " + msg.connection.clientIP + " is lost, reply cannot be sent " + msg);
-                            }
-                            
-                        }
-                        else
-                        {
-                            ERROR("Destination DNE for msg: " + msg);
-                        }
+                        byte[] data = msg.Serialize();
+                        msg.connection.SendAsync(data);
+                    }
+                    else
+                    {
+                        WARNING("Connection to client " + msg.connection.clientIP + " is lost, reply cannot be sent " + msg);
+                    }
+
+                }
+                else
+                {
+                    ERROR("Destination DNE for msg: " + msg);
+                }
             }
         }
 

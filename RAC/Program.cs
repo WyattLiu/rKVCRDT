@@ -24,8 +24,10 @@ namespace RAC
 
             Global.init(nodeconfigfile);
 
-            var recieveHandler = Global.server.HandleRequestAsync();
-            var sendHandler = Global.server.SendResponseAsync();
+            var handler0 = Global.server.HandleRequestAsync(Global.server.reqQueue);
+            var handler1 = Global.server.SendResponseAsync(Global.server.respQueue);
+            var handler2 = Global.server.HandleRequestAsync(Global.server.clusterReqQueue);
+            var handler3 = Global.server.SendResponseAsync(Global.server.ClusterRespQueue);
 
             Global.server.Run();
 
