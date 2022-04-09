@@ -34,7 +34,7 @@ namespace RAC.Consensus
     /// <summary>
     /// Class for an instance of consensus
     /// </summary>
-    public class Consensus
+    public class ConsensusInstance
     {
 
         // id for a certain round of decision
@@ -45,7 +45,10 @@ namespace RAC.Consensus
         public MD5 value { set; get; }
         public ConsensusStatus status = ConsensusStatus.undecided;
 
-
+        public void doConsensus()
+        {
+            
+        }
 
 
 

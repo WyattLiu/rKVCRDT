@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using RAC.Payloads;
 using RAC.Operations;
+using RAC.Consensus;
 using Newtonsoft.Json;
 using static RAC.Errors.Log;
 using System.Linq;
@@ -37,6 +38,9 @@ namespace RAC.History
         // prev used for sync'd ops to link
         public List<String> prev;
 
+        // consensus
+        public ConsensusInstance consensus;
+
         public StateHisotryEntry(string uid, string opid, string before, string after, string time, bool isrev)
         {
             this.nodeid = Global.selfNode.nodeid;
@@ -48,6 +52,8 @@ namespace RAC.History
             this.aft = new List<string>();
             this.prev = new List<string>();
             this.isrev = isrev;
+
+            this.consensus = new ConsensusInstance();
         }
     }
 
@@ -91,6 +97,8 @@ namespace RAC.History
         /// <value></value>
         public CompensateMethod Compensate { set; get; }
 
+        List<StateHisotryEntry> undecided {set;get;}
+
         public OpHistory(string uid, CompensateMethod compensate)
         {
             this.uid = uid;
@@ -100,6 +108,8 @@ namespace RAC.History
             this.curTime = new Clock(Config.numReplicas, Config.replicaId);
             this.globalTimes = new List<Clock>(Global.cluster.numNodes);
             this.Compensate = compensate;
+
+            this.undecided = new List<StateHisotryEntry>();
 
             for (int i = 0; i < globalTimes.Capacity; i++)
                 this.globalTimes.Add(new Clock(globalTimes.Capacity, i));
@@ -350,8 +360,6 @@ namespace RAC.History
                     res.Add(op.opid);
             }
             return res;
-
-
         }
 
         /// <summary>
