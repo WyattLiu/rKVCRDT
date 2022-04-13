@@ -30,10 +30,13 @@ namespace RAC.Consensus
 
         public string sign { set; get; }
 
-        public ConsensusMessage(ConsensusMessageType type, int sender)
+        public ConsensusMessage(int cid, ConsensusMessageType type, int sender, MD5 digest, string sign)
         {
+            this.cid = cid;
             this.type = type;
             this.sender = sender;
+            this.digest = digest;
+            this.sign = sign;
         }
 
     }

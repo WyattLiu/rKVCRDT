@@ -61,11 +61,8 @@ namespace RAC.Consensus
             this.currentConsensus.proposer = this.id;
             this.currentConsensus.status = ConsensusStatus.prepare;
 
-            ConsensusMessage ppMsg = new ConsensusMessage(ConsensusMessageType.pre_prepare, this.id);
+            ConsensusMessage ppMsg = new ConsensusMessage(this.currentConsensus.cid, ConsensusMessageType.pre_prepare, this.id ,digest, sign);
             ppMsg.value = value;
-            ppMsg.digest = digest;
-            ppMsg.sign = sign;
-            ppMsg.cid = this.currentConsensus.cid;
 
             this.broadcast(ppMsg);
             DEBUG("broadcasting new pre-prepare for " + value);
@@ -125,12 +122,9 @@ namespace RAC.Consensus
             this.currentConsensus.value = ppMsg.value;
             this.currentConsensus.digest = ppMsg.digest;
 
+            string sign = this.sign(this.currentConsensus.digest.ToString());
+            ConsensusMessage prepareMsg = new ConsensusMessage(this.currentConsensus.cid, ConsensusMessageType.prepare, this.id, this.currentConsensus.digest, sign);
 
-            ConsensusMessage prepareMsg = new ConsensusMessage(ConsensusMessageType.prepare, this.id);
-
-            prepareMsg.digest = ppMsg.digest;
-            prepareMsg.cid = ppMsg.cid;
-            prepareMsg.sign = this.sign(ppMsg.digest.ToString());
             this.broadcast(prepareMsg);
             this.currentConsensus.status = ConsensusStatus.prepare;
         }
@@ -176,11 +170,9 @@ namespace RAC.Consensus
 
             if (this.currentConsensus.recievedValidPrepare >= f)
             {
-                ConsensusMessage commitMsg = new ConsensusMessage(ConsensusMessageType.commit, this.id);
+                string sign = this.sign(this.currentConsensus.digest.ToString());
 
-                commitMsg.digest = prepMsg.digest;
-                commitMsg.cid = prepMsg.cid;
-                commitMsg.sign = this.sign(prepMsg.digest.ToString());
+                ConsensusMessage commitMsg = new ConsensusMessage(this.currentConsensus.cid, ConsensusMessageType.commit, this.id, this.currentConsensus.digest, sign);
 
                 this.broadcast(commitMsg);
 
@@ -206,11 +198,12 @@ namespace RAC.Consensus
 
             if (this.currentConsensus.recievedValidCommit >= this.currentConsensus.numNodes / 3 * 2)
             {
-                ConsensusMessage completeMsg = new ConsensusMessage(ConsensusMessageType.complete, this.id);
-                completeMsg.digest = commitMsg.digest;
-                completeMsg.cid = commitMsg.cid;
+                string sign = this.sign(this.currentConsensus.digest.ToString());
 
-                this.sendMsg(commitMsg, this.currentConsensus.proposer);
+                ConsensusMessage compelteMsg = new ConsensusMessage(this.currentConsensus.cid, ConsensusMessageType.complete, this.id, this.currentConsensus.digest, sign);
+
+                this.sendMsg(compelteMsg, this.currentConsensus.proposer);
+                this.currentConsensus.status = ConsensusStatus.decided;
 
             }
 
