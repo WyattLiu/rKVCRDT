@@ -97,8 +97,6 @@ namespace RAC.History
         /// <value></value>
         public CompensateMethod Compensate { set; get; }
 
-        List<StateHisotryEntry> undecided {set;get;}
-
         public OpHistory(string uid, CompensateMethod compensate)
         {
             this.uid = uid;
@@ -108,8 +106,6 @@ namespace RAC.History
             this.curTime = new Clock(Config.numReplicas, Config.replicaId);
             this.globalTimes = new List<Clock>(Global.cluster.numNodes);
             this.Compensate = compensate;
-
-            this.undecided = new List<StateHisotryEntry>();
 
             for (int i = 0; i < globalTimes.Capacity; i++)
                 this.globalTimes.Add(new Clock(globalTimes.Capacity, i));
