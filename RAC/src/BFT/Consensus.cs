@@ -5,30 +5,17 @@ using System.Security.Cryptography;
 using RAC;
 using static RAC.Errors.Log;
 
-// taken inspritation from BFTSmart
-// https://github.com/bft-smart/library
+
 namespace RAC.Consensus
 {
-    /// <summary>
-    /// Class for a single decision.
-    /// </summary>
-    public class Decision
-    {
-
-
-        public Decision()
-        {
-
-        }
-
-    }
-
     public enum ConsensusStatus
     {
         undecided = 0,
-        inProgress = 1,
-        decided = 2,
-        failed = 3
+        pre_prepare = 1,
+        prepare = 2,
+        commit = 3,
+        decided = 4,
+        failed = 5
     }
 
     /// <summary>
@@ -40,17 +27,19 @@ namespace RAC.Consensus
         // id for a certain round of decision
         public int cid { set; get; }
         // propoerser of this round of decision
-        public Proposer proposer { set; get; }
+        public int proposer { set; get; }
         // hash of the decided value
-        public MD5 value { set; get; }
+        public string value { set; get; }
+        public MD5 digest { set; get; }
         public ConsensusStatus status = ConsensusStatus.undecided;
 
-        public void doConsensus()
-        {
-            
-        }
+        public int numNodes { set; get; }
 
-
+        public int recievedPP { set; get; } = 0;
+        public int recievedPrepare { set; get; } = 0;
+        public int recievedValidPrepare { set; get; } = 0;
+        public int recievedCommit { set; get; } = 0;
+        public int recievedValidCommit {set; get; } = 0;
 
     }
 

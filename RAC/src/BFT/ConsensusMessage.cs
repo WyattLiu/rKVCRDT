@@ -10,27 +10,32 @@ namespace RAC.Consensus
 {
     public enum ConsensusMessageType
     {
-        Propose = 0,
-        Write = 1,
-        Accept = 2
-        
+        pre_prepare = 0,
+        prepare = 1,
+        commit = 2,
+        complete = 3
+
     }
 
     public class ConsensusMessage
     {
 
-        public int cid {set; get;}
+        public int cid { set; get; }
+        public int sender { set; get; }
 
-        public MD5 value { private set; get; }
-        public ConsensusMessageType type {set;get;}
+        public string value { set; get; }
 
-        public string proof { set; get; }
+        public MD5 digest { set; get; }
+        public ConsensusMessageType type { set; get; }
 
-        public ConsensusMessage(MD5 value)
+        public string sign { set; get; }
+
+        public ConsensusMessage(ConsensusMessageType type, int sender)
         {
-            this.value = value;
+            this.type = type;
+            this.sender = sender;
         }
-        
+
     }
 
 }
