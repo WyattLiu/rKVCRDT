@@ -11,7 +11,8 @@ namespace RAC.Network
     public enum MsgSrc
     {
         server = 1,
-        client = 2
+        client = 2,
+        bftnode = 3
     }
 
     // Protocol looks like this
@@ -29,11 +30,11 @@ namespace RAC.Network
         public string content { get; }
 
         // --meta data--
-        public ClientSession connection { get; set; }
+        public ConnectionSession connection { get; set; }
         public Dest to { get; set; }
 
         // create a msg from received
-        public MessagePacket(MsgSrc src, int length, string content, ClientSession from)
+        public MessagePacket(MsgSrc src, int length, string content, ConnectionSession from)
         {
             this.msgSrc = src;
             this.length = length;
@@ -52,7 +53,7 @@ namespace RAC.Network
             this.to = to;
         }
 
-        public static int ParseReceivedMessage(byte[] cache, in ClientSession from)
+        public static int ParseReceivedMessage(byte[] cache, in ConnectionSession from)
         {
             int parsedSize = 0;
             for (int i = 0; i < (int)cache.Length; i++)

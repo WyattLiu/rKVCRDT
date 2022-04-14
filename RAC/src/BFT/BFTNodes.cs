@@ -37,6 +37,11 @@ namespace RAC.Consensus
 
         }
 
+        public static void parseConsensusMessage(string msg)
+        {
+            
+        }
+
     }
 
 

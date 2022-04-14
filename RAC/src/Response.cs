@@ -56,7 +56,7 @@ namespace RAC
             contentLength++;
         }
 
-        public void StageResponse(ClientSession to = null)
+        public void StageResponse(ConnectionSession to = null)
         {
             for (int i = 0; i < this.destinations.Count; i++)
             {

@@ -9,11 +9,11 @@ using NetCoreServer;
 
 using RAC.Errors;
 using static RAC.Errors.Log;
-
+using RAC.Consensus;
 namespace RAC.Network
 {
 
-    public class ClientSession : TcpSession
+    public class ConnectionSession : TcpSession
     {
         private BufferBlock<MessagePacket> reqQueue;
         private BufferBlock<MessagePacket> respQueue;
@@ -22,7 +22,7 @@ namespace RAC.Network
         public string clientIP { get; private set; }
 
 
-        public ClientSession(TcpServer server,
+        public ConnectionSession(TcpServer server,
         ref BufferBlock<MessagePacket> reqQueue,
         ref BufferBlock<MessagePacket> respQueue) : base(server)
         {
@@ -83,7 +83,7 @@ namespace RAC.Network
 
         protected override TcpSession CreateSession()
         {
-            return new ClientSession(this, ref this.reqQueue, ref this.respQueue);
+            return new ConnectionSession(this, ref this.reqQueue, ref this.respQueue);
         }
 
 
@@ -114,6 +114,9 @@ namespace RAC.Network
         // ClusterListener - interserver communication
         public TcpHandler clusterListener;
 
+        public RAC.Consensus.Proposer PBFTProposer{ get; set; }
+        public RAC.Consensus.Accepter PBFTAccepter{ get; set; }
+
 
         // threshold for stop reading if still no starter detected
         private const int readThreshold = 100;
@@ -139,8 +142,15 @@ namespace RAC.Network
                 {
                     DEBUG("Resparing response");
 
-                    Responses res = Parser.RunCommand(msg.content, msg.msgSrc);
-                    res.StageResponse(msg.connection);
+                    if (msg.msgSrc == MsgSrc.bftnode)
+                    {
+                        BFTNodes.parseConsensusMessage(msg.content);
+                    }
+                    else
+                    {
+                        Responses res = Parser.RunCommand(msg.content, msg.msgSrc);
+                        res.StageResponse(msg.connection);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
