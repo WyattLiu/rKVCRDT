@@ -33,7 +33,7 @@ namespace RAC.Consensus
         public MD5 digest { get; }
         public ConsensusStatus status = ConsensusStatus.undecided;
 
-        public int numNodes { set; get; }
+        public int numNodes { set; get; } = Global.cluster.numNodes;
 
         public int recievedPP { set; get; } = 0;
         public int recievedPrepare { set; get; } = 0;

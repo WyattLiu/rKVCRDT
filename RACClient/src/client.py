@@ -10,6 +10,7 @@ from type.ORSet import ORSet
 from type.Graph import Graph
 from type.RGraph import RGraph
 from type.Performance import Performance
+from type.BFTC import BFTC
 from type.helper import res_parse
 from type.Type import Type
 from type.Action import Action
@@ -121,6 +122,9 @@ if __name__ == "__main__":
 
             elif (typecode == Type.PERFORMANCE):
                 typeClass = Performance(s)
+
+            elif (typecode == Type.BFTC):
+                typeClass = BFTC(s)
 
             else:
                 print("Type \'{}\' is not valid".format(typecode))

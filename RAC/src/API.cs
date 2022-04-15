@@ -93,6 +93,15 @@ namespace RAC
             AddNewAPI("RGraph", "RemoveEdge", "re", "string, string");
             AddNewAPI("RGraph", "Synchronization", "y", "string, string, string");
             AddNewAPI("RGraph", "Reverse", "r", "string");
+
+
+            AddNewType("BFTCounter", "bftc");
+            AddNewAPI("BFTCounter", "GetValue", "g", "");
+            AddNewAPI("BFTCounter", "SetValue", "s", "int");
+            AddNewAPI("BFTCounter", "Synchronization", "y", "listi, listi");
+            AddNewAPI("BFTCounter", "Increment", "i", "int");
+            AddNewAPI("BFTCounter", "Decrement", "d", "int");
+
         }
     }
 }

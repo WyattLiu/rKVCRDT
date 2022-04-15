@@ -86,6 +86,8 @@ namespace RAC.Operations
 
             string opid = this.history.AddNewEntry(oldstate, this.payload, BFTCounterPayload.PayloadToStr);
 
+            Global.server.bftNode.startConsensus(opid, "+" + this.parameters.GetParam<int>(0).ToString());
+
             Responses res = new Responses(Status.success);
             res.AddResponse(Dest.client, opid);
             GenerateSyncRes(ref res, opid);
@@ -99,6 +101,8 @@ namespace RAC.Operations
             this.payload.NVector[this.payload.replicaid] += this.parameters.GetParam<int>(0);
 
             string opid = this.history.AddNewEntry(oldstate, this.payload, BFTCounterPayload.PayloadToStr);
+
+            Global.server.bftNode.startConsensus(opid, "-" + this.parameters.GetParam<int>(0).ToString());
 
             Responses res = new Responses(Status.success);
             res.AddResponse(Dest.client, opid); 

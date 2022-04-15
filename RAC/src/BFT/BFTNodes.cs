@@ -44,12 +44,12 @@ namespace RAC.Consensus
 
 
 
-        public void startConsensus(string value)
+        public void startConsensus(string cid, string value)
         {
             MD5 digest = MD5.Create(value);
             string sign = this.sign(digest.ToString());
 
-            ConsensusInstance newConsensus = new ConsensusInstance("0", this.id, value, digest);
+            ConsensusInstance newConsensus = new ConsensusInstance(cid, this.id, value, digest);
 
             newConsensus.status = ConsensusStatus.prepare;
 
@@ -59,7 +59,7 @@ namespace RAC.Consensus
             ppMsg.value = value;
 
             this.broadcast(ppMsg);
-            DEBUG("broadcasting new pre-prepare for " + value);
+            DEBUG("broadcasting new pre-prepare for " + newConsensus.cid);
         }
 
         public void parseConsensusMessage(string msgStr)
@@ -86,21 +86,20 @@ namespace RAC.Consensus
         public MessagePacket preprepareReceived(ConsensusMessage ppMsg)
         {
 
-            DEBUG("Recieve prepare msg");
 
             ConsensusInstance newConsensus = new ConsensusInstance(ppMsg.cid, ppMsg.sender, ppMsg.value, ppMsg.digest);
             newConsensus.status = ConsensusStatus.pre_prepare;
 
             if (!ppMsg.digest.Equals(MD5.Create(ppMsg.value)))
             {
-                LOG("ppMsg for " + ppMsg.value + " failed because of digest mismatch");
+                LOG("ppMsg for " + newConsensus.cid + " failed because of digest mismatch");
                 newConsensus.status = ConsensusStatus.failed;
                 return null;
             }
 
             if (this.sign(ppMsg.digest.ToString()) != ppMsg.sign)
             {
-                LOG("ppMsg for " + ppMsg.value + " failed because of incorrect signiture");
+                LOG("ppMsg for " + newConsensus.cid + " failed because of incorrect signiture");
                 newConsensus.status = ConsensusStatus.failed;
                 return null;
             }
@@ -111,6 +110,8 @@ namespace RAC.Consensus
             ConsensusMessage prepareMsg = new ConsensusMessage(newConsensus.cid, ConsensusMessageType.prepare, this.id, newConsensus.digest, sign);
 
             newConsensus.status = ConsensusStatus.prepare;
+
+            DEBUG("Broadcast prepare msg for " + newConsensus.cid);
             return this.broadcast(prepareMsg);
         }
 
@@ -162,6 +163,7 @@ namespace RAC.Consensus
 
 
                 ongoingConsensus.status = ConsensusStatus.commit;
+                DEBUG("Broadcast commit msg for " + ongoingConsensus.cid);
                 return this.broadcast(commitMsg);
             }
 
@@ -196,7 +198,7 @@ namespace RAC.Consensus
 
                 
                 ongoingConsensus.status = ConsensusStatus.decided;
-                LOG("Consensus " + ongoingConsensus.cid + " decided");
+                DEBUG("Consensus " + ongoingConsensus.cid + " decided");
                 return this.sendMsg(compelteMsg, ongoingConsensus.proposer);
             }
 
