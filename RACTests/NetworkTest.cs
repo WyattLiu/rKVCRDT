@@ -24,7 +24,7 @@ i
             MessagePacket msg = new MessagePacket(input);
 
             Assert.Equal("100.100.1.1:5000", msg.from) ;
-            Assert.Equal("150.150.2.2:5001", msg.to);
+            Assert.Equal("150.150.2.2:5001", msg.endpointType);
             Assert.Equal(MsgSrc.client, msg.msgSrc);
             Assert.Equal(8, msg.length);
             Assert.Equal("gc\n1\ni\n5", msg.content);
@@ -53,7 +53,7 @@ Randomstuffs
             MessagePacket msg = new MessagePacket(input);
 
             Assert.Equal("100.100.1.1:5000", msg.from) ;
-            Assert.Equal("150.150.2.2:5001", msg.to);
+            Assert.Equal("150.150.2.2:5001", msg.endpointType);
             Assert.Equal(MsgSrc.client, msg.msgSrc);
             Assert.Equal(8, msg.length);
             Assert.Equal("gc\n1\ni\n5\n", msg.content);
@@ -65,7 +65,7 @@ Randomstuffs
             MessagePacket msg = new MessagePacket("100.100.1.1:5000", "150.150.2.2:5001", "gc\n1\ni\n5");
 
             Assert.Equal("100.100.1.1:5000", msg.from) ;
-            Assert.Equal("150.150.2.2:5001", msg.to);
+            Assert.Equal("150.150.2.2:5001", msg.endpointType);
             Assert.Equal(MsgSrc.server, msg.msgSrc);
             Assert.Equal(8, msg.length);
             Assert.Equal("gc\n1\ni\n5", msg.content);

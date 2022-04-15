@@ -17,7 +17,8 @@ namespace RAC
     {
         client,
         broadcast,
-        none
+        none, // TODO: just replace the part in server with null check??
+        server
     }
 
     public class Responses

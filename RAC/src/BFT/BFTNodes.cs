@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading.Tasks.Dataflow;
 
 using RAC;
 using static RAC.Errors.Log;
 using System.Net;
+using RAC.Network;
+
 
 namespace RAC.Consensus
 {
@@ -28,15 +31,18 @@ namespace RAC.Consensus
             return value;
         }
 
-        public void sendMsg(ConsensusMessage msg, int targetNode)
+        public MessagePacket sendMsg(ConsensusMessage msg, int targetNode)
         {
+            return new MessagePacket(msg.serialize(), Dest.server, targetNode);
 
         }
 
-        public void broadcast(ConsensusMessage msg)
+        public MessagePacket broadcast(ConsensusMessage msg)
         {
-
+            return new MessagePacket(msg.serialize(), Dest.broadcast);
         }
+
+
 
         public void startConsensus(string value)
         {
@@ -59,55 +65,57 @@ namespace RAC.Consensus
         public void parseConsensusMessage(string msgStr)
         {
             ConsensusMessage msg = ConsensusMessage.deserialize(msgStr);
-
+            MessagePacket res = null;
             switch (msg.type)
             {
                 case ConsensusMessageType.pre_prepare:
-                    this.preprepareReceived(msg);
+                    res = this.preprepareReceived(msg);
                     break;
                 case ConsensusMessageType.prepare:
-                    this.prepareReceived(msg);
+                    res = this.prepareReceived(msg);
                     break;
                 case ConsensusMessageType.commit:
-                    this.acceptReceived(msg);
+                    res = this.acceptReceived(msg);
                     break;
-
             }
+
+            Global.server.respQueue.Post(res);
         }
 
 
-        public void preprepareReceived(ConsensusMessage ppMsg)
+        public MessagePacket preprepareReceived(ConsensusMessage ppMsg)
         {
 
             DEBUG("Recieve prepare msg");
 
+            ConsensusInstance newConsensus = new ConsensusInstance(ppMsg.cid, ppMsg.sender, ppMsg.value, ppMsg.digest);
+            newConsensus.status = ConsensusStatus.pre_prepare;
 
             if (!ppMsg.digest.Equals(MD5.Create(ppMsg.value)))
             {
                 LOG("ppMsg for " + ppMsg.value + " failed because of digest mismatch");
-                return;
+                newConsensus.status = ConsensusStatus.failed;
+                return null;
             }
 
             if (this.sign(ppMsg.digest.ToString()) != ppMsg.sign)
             {
                 LOG("ppMsg for " + ppMsg.value + " failed because of incorrect signiture");
-                return;
+                newConsensus.status = ConsensusStatus.failed;
+                return null;
             }
-
-            ConsensusInstance newConsensus = new ConsensusInstance(ppMsg.cid, ppMsg.sender, ppMsg.value, ppMsg.digest);
-            newConsensus.status = ConsensusStatus.pre_prepare;
 
             this.currentConsensus[newConsensus.cid] = newConsensus;
 
             string sign = this.sign(newConsensus.digest.ToString());
             ConsensusMessage prepareMsg = new ConsensusMessage(newConsensus.cid, ConsensusMessageType.prepare, this.id, newConsensus.digest, sign);
 
-            this.broadcast(prepareMsg);
             newConsensus.status = ConsensusStatus.prepare;
+            return this.broadcast(prepareMsg);
         }
 
 
-        private void prepareReceived(ConsensusMessage prepMsg)
+        private MessagePacket prepareReceived(ConsensusMessage prepMsg)
         {
 
             ConsensusInstance ongoingConsensus = this.currentConsensus[prepMsg.cid];
@@ -125,19 +133,21 @@ namespace RAC.Consensus
             }
 
             if (ongoingConsensus.status != ConsensusStatus.prepare)
-                return;
+                return null;
 
             if (ongoingConsensus is null)
             {
                 // TODO: ?
                 LOG("prepMsg for " + prepMsg.cid + " failed because of unvalid current consensus");
-                return;
+                ongoingConsensus.status = ConsensusStatus.failed;
+                return null;
             }
 
             if (prepMsg.digest != ongoingConsensus.digest)
             {
                 LOG("prepMsg for " + prepMsg.cid + " failed because of incorrect digset");
-                return;
+                ongoingConsensus.status = ConsensusStatus.failed;
+                return null;
             }
 
             // TODO: check other stuffs
@@ -150,29 +160,30 @@ namespace RAC.Consensus
 
                 ConsensusMessage commitMsg = new ConsensusMessage(ongoingConsensus.cid, ConsensusMessageType.commit, this.id, ongoingConsensus.digest, sign);
 
-                this.broadcast(commitMsg);
 
                 ongoingConsensus.status = ConsensusStatus.commit;
+                return this.broadcast(commitMsg);
             }
 
             // this.currentConsensus[ongoingConsensus.cid] = ongoingConsensus; not needed cuz dic store by reference
-
+            return null;
 
         }
 
-        private void acceptReceived(ConsensusMessage commitMsg)
+        private MessagePacket acceptReceived(ConsensusMessage commitMsg)
         {
 
             ConsensusInstance ongoingConsensus = this.currentConsensus[commitMsg.cid];
 
             ongoingConsensus.recievedCommit++;
             if (ongoingConsensus.status != ConsensusStatus.commit)
-                return;
+                return null;
 
             if (commitMsg.digest != ongoingConsensus.digest)
             {
                 LOG("commitMsg for " + commitMsg.cid + " failed because of incorrect digset");
-                return;
+                ongoingConsensus.status = ConsensusStatus.failed;
+                return null;
             }
 
             ongoingConsensus.recievedValidCommit++;
@@ -183,10 +194,13 @@ namespace RAC.Consensus
 
                 ConsensusMessage compelteMsg = new ConsensusMessage(ongoingConsensus.cid, ConsensusMessageType.complete, this.id, ongoingConsensus.digest, sign);
 
-                this.sendMsg(compelteMsg, ongoingConsensus.proposer);
+                
                 ongoingConsensus.status = ConsensusStatus.decided;
                 LOG("Consensus " + ongoingConsensus.cid + " decided");
+                return this.sendMsg(compelteMsg, ongoingConsensus.proposer);
             }
+
+            return null;
 
 
         }

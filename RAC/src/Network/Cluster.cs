@@ -186,28 +186,38 @@ namespace RAC.Network
             }
         }
 
+        public void Send(MessagePacket msg, int destination)
+        {
+            Node n = nodes[destination];
+            this.Send(msg, n);
+        }
+
+        public void Send(MessagePacket msg, Node destination)
+        {
+
+            if (destination.isSelf)
+                return;
+
+            int retry = 0;
+            while (!destination.connection.IsConnected && retry++ <= MAX_RETRY)
+                destination.connect();
+
+            if (destination.connection is null)
+                ERROR("Broadcast failed to cluster node " + destination.address + ":" + destination.clusterPort);
+            else
+            {
+                destination.send(msg);
+            }
+
+        }
+
+
         private const int MAX_RETRY = 5;
         public void BroadCast(MessagePacket msg)
         {   
-            // TODO: handle rebroadcast if failed
             foreach (var n in nodes)
-            {
-                if (n.isSelf)
-                    continue;
-
-                int retry = 0;
-                while (!n.connection.IsConnected && retry++ <= MAX_RETRY)
-                    n.connect();
-
-                if (n.connection is null)
-                    ERROR("Broadcast failed to cluster node " + n.address + ":" + n.clusterPort);
-                else
-                {
-                    n.send(msg);
-                }
-            }
+                this.Send(msg, n);
         }
-
     }
 
 }

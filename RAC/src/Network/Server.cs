@@ -146,7 +146,7 @@ namespace RAC.Network
                     if (msg.msgSrc == MsgSrc.bftnode)
                     {
                         bftNode.parseConsensusMessage(msg.content);
-                    }
+                    }   
                     else
                     {
                         Responses res = Parser.RunCommand(msg.content, msg.msgSrc);
@@ -177,12 +177,12 @@ namespace RAC.Network
                 MessagePacket msg = queue.Receive();
 
                 // broadcast
-                if (msg.to == Dest.broadcast)
+                if (msg.endpointType == Dest.broadcast)
                 {
                     this.cluster.BroadCast(msg);
                 }
                 // reply to client, if connection found to be ended, do nothing
-                else if (msg.to == Dest.client)
+                else if (msg.endpointType == Dest.client)
                 {
                     if (msg.connection.IsConnected)
                     {

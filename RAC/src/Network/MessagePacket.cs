@@ -28,10 +28,14 @@ namespace RAC.Network
         public MsgSrc msgSrc { get; }
         public int length { get; }
         public string content { get; }
+        // server id of reciving node, if not broadcast
+        public int to { get; } 
 
         // --meta data--
         public ConnectionSession connection { get; set; }
-        public Dest to { get; set; }
+        public Dest endpointType { get; set; }
+
+
 
         // create a msg from received
         public MessagePacket(MsgSrc src, int length, string content, ConnectionSession from)
@@ -44,13 +48,17 @@ namespace RAC.Network
         }
 
         // create a msg to send
-        public MessagePacket(string content, Dest to)
+        public MessagePacket(string content, Dest endpointType, int toid = -1)
         {
             this.msgSrc = MsgSrc.server;
             this.length = content.Length;
             this.content = content;
 
-            this.to = to;
+            this.endpointType = endpointType;
+
+            if (endpointType == Dest.server && to == -1)
+                throw new ArgumentException(" Destination is to a single server but no destination id is given");
+
         }
 
         public static int ParseReceivedMessage(byte[] cache, in ConnectionSession from)
