@@ -25,7 +25,7 @@ namespace RAC.Network
         // 1 byte '\f' + each field is 4 bytes * N
         public static int HEADER_SIZE = 1 + NUM_FIELDS * 4;
 
-        public MsgSrc msgSrc { get; }
+        public MsgSrc msgSrc { set; get; }
         public int length { get; }
         public string content { get; }
         // server id of reciving node, if not broadcast
@@ -50,9 +50,11 @@ namespace RAC.Network
         // create a msg to send
         public MessagePacket(string content, Dest endpointType, int toid = -1)
         {
+
             this.msgSrc = MsgSrc.server;
             this.length = content.Length;
             this.content = content;
+
 
             this.endpointType = endpointType;
 
@@ -60,6 +62,10 @@ namespace RAC.Network
                 throw new ArgumentException(" Destination is to a single server but no destination id is given");
 
         }
+
+
+
+
 
         public static int ParseReceivedMessage(byte[] cache, in ConnectionSession from)
         {

@@ -38,9 +38,6 @@ namespace RAC.History
         // prev used for sync'd ops to link
         public List<String> prev;
 
-        // consensus
-        public ConsensusInstance consensus;
-
         public StateHisotryEntry(string uid, string opid, string before, string after, string time, bool isrev)
         {
             this.nodeid = Global.selfNode.nodeid;

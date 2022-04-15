@@ -7,7 +7,8 @@ using RAC;
 using static RAC.Errors.Log;
 using System.Net;
 using RAC.Network;
-
+using System.Text;
+using System.Linq;
 
 namespace RAC.Consensus
 {
@@ -33,20 +34,26 @@ namespace RAC.Consensus
 
         public MessagePacket sendMsg(ConsensusMessage msg, int targetNode)
         {
-            return new MessagePacket(msg.serialize(), Dest.server, targetNode);
+            MessagePacket packet = new MessagePacket(msg.serialize(), Dest.server, targetNode);
+            packet.msgSrc = MsgSrc.bftnode;
+            return packet;
 
         }
 
         public MessagePacket broadcast(ConsensusMessage msg)
         {
-            return new MessagePacket(msg.serialize(), Dest.broadcast);
+            MessagePacket packet = new MessagePacket(msg.serialize(), Dest.broadcast);
+            packet.msgSrc = MsgSrc.bftnode;
+            return packet;
         }
 
 
 
         public void startConsensus(string cid, string value)
         {
-            MD5 digest = MD5.Create(value);
+
+            MD5 md5 = MD5.Create();
+            byte[] digest = md5.ComputeHash(Encoding.Unicode.GetBytes(value));
             string sign = this.sign(digest.ToString());
 
             ConsensusInstance newConsensus = new ConsensusInstance(cid, this.id, value, digest);
@@ -58,14 +65,18 @@ namespace RAC.Consensus
             ConsensusMessage ppMsg = new ConsensusMessage(newConsensus.cid, ConsensusMessageType.pre_prepare, this.id, digest, sign);
             ppMsg.value = value;
 
-            this.broadcast(ppMsg);
             DEBUG("broadcasting new pre-prepare for " + newConsensus.cid);
+
+            MessagePacket msg = this.broadcast(ppMsg);
+            Global.server.respQueue.Post(msg);
+            
         }
 
         public void parseConsensusMessage(string msgStr)
         {
             ConsensusMessage msg = ConsensusMessage.deserialize(msgStr);
             MessagePacket res = null;
+            DEBUG("Recieved new consensus request " + msg.ToString());
             switch (msg.type)
             {
                 case ConsensusMessageType.pre_prepare:
@@ -79,7 +90,7 @@ namespace RAC.Consensus
                     break;
             }
 
-            Global.server.respQueue.Post(res);
+            if (res is not null) Global.server.respQueue.Post(res);
         }
 
 
@@ -90,7 +101,7 @@ namespace RAC.Consensus
             ConsensusInstance newConsensus = new ConsensusInstance(ppMsg.cid, ppMsg.sender, ppMsg.value, ppMsg.digest);
             newConsensus.status = ConsensusStatus.pre_prepare;
 
-            if (!ppMsg.digest.Equals(MD5.Create(ppMsg.value)))
+            if (!ppMsg.digest.SequenceEqual(MD5.Create().ComputeHash(Encoding.Unicode.GetBytes(ppMsg.value))))
             {
                 LOG("ppMsg for " + newConsensus.cid + " failed because of digest mismatch");
                 newConsensus.status = ConsensusStatus.failed;
@@ -144,9 +155,9 @@ namespace RAC.Consensus
                 return null;
             }
 
-            if (prepMsg.digest != ongoingConsensus.digest)
+            if (!prepMsg.digest.SequenceEqual(ongoingConsensus.digest))
             {
-                LOG("prepMsg for " + prepMsg.cid + " failed because of incorrect digset");
+                LOG("prepMsg for " + prepMsg.cid + " failed because of incorrect digest");
                 ongoingConsensus.status = ConsensusStatus.failed;
                 return null;
             }
@@ -165,7 +176,8 @@ namespace RAC.Consensus
                 ongoingConsensus.status = ConsensusStatus.commit;
                 DEBUG("Broadcast commit msg for " + ongoingConsensus.cid);
                 return this.broadcast(commitMsg);
-            }
+            } 
+
 
             // this.currentConsensus[ongoingConsensus.cid] = ongoingConsensus; not needed cuz dic store by reference
             return null;
@@ -181,10 +193,9 @@ namespace RAC.Consensus
             if (ongoingConsensus.status != ConsensusStatus.commit)
                 return null;
 
-            if (commitMsg.digest != ongoingConsensus.digest)
-            {
-                LOG("commitMsg for " + commitMsg.cid + " failed because of incorrect digset");
-                ongoingConsensus.status = ConsensusStatus.failed;
+            if (!commitMsg.digest.SequenceEqual(ongoingConsensus.digest))
+            {            
+                LOG("commitMsg for " + commitMsg.cid + " incorrect because of incorrect digset");
                 return null;
             }
 

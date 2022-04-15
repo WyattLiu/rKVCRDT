@@ -30,7 +30,7 @@ namespace RAC.Consensus
         public int proposer { get; }
         // hash of the decided value
         public string value { get; }
-        public MD5 digest { get; }
+        public byte[] digest { get; }
         public ConsensusStatus status = ConsensusStatus.undecided;
 
         public int numNodes { set; get; } = Global.cluster.numNodes;
@@ -41,7 +41,7 @@ namespace RAC.Consensus
         public int recievedCommit { set; get; } = 0;
         public int recievedValidCommit {set; get; } = 0;
 
-        public ConsensusInstance(string cid, int proposer, string value, MD5 digest)
+        public ConsensusInstance(string cid, int proposer, string value, byte[] digest)
         {
             this.cid = cid;
             this.proposer = proposer;

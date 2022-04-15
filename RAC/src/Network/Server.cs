@@ -181,6 +181,11 @@ namespace RAC.Network
                 {
                     this.cluster.BroadCast(msg);
                 }
+                else if (msg.endpointType == Dest.server)
+                {
+                    this.cluster.Send(msg, msg.to);
+
+                }
                 // reply to client, if connection found to be ended, do nothing
                 else if (msg.endpointType == Dest.client)
                 {
@@ -194,8 +199,8 @@ namespace RAC.Network
                     {
                         WARNING("Connection to client " + msg.connection.clientIP + " is lost, reply cannot be sent " + msg);
                     }
-
                 }
+
                 else
                 {
                     ERROR("Destination DNE for msg: " + msg);

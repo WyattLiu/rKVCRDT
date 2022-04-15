@@ -26,12 +26,12 @@ namespace RAC.Consensus
 
         public string value { set; get; }
 
-        public MD5 digest { set; get; }
+        public byte[] digest { set; get; }
         public ConsensusMessageType type { set; get; }
 
         public string sign { set; get; }
 
-        public ConsensusMessage(string cid, ConsensusMessageType type, int sender, MD5 digest, string sign)
+        public ConsensusMessage(string cid, ConsensusMessageType type, int sender, byte[] digest, string sign)
         {
             this.cid = cid;
             this.type = type;
