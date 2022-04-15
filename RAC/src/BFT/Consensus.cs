@@ -25,12 +25,12 @@ namespace RAC.Consensus
     {
 
         // id for a certain round of decision
-        public int cid { set; get; }
+        public string cid { get; }
         // propoerser of this round of decision
-        public int proposer { set; get; }
+        public int proposer { get; }
         // hash of the decided value
-        public string value { set; get; }
-        public MD5 digest { set; get; }
+        public string value { get; }
+        public MD5 digest { get; }
         public ConsensusStatus status = ConsensusStatus.undecided;
 
         public int numNodes { set; get; }
@@ -40,6 +40,15 @@ namespace RAC.Consensus
         public int recievedValidPrepare { set; get; } = 0;
         public int recievedCommit { set; get; } = 0;
         public int recievedValidCommit {set; get; } = 0;
+
+        public ConsensusInstance(string cid, int proposer, string value, MD5 digest)
+        {
+            this.cid = cid;
+            this.proposer = proposer;
+            this.value = value;
+            this.digest = digest;
+        }
+
 
     }
 

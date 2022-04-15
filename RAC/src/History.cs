@@ -52,8 +52,6 @@ namespace RAC.History
             this.aft = new List<string>();
             this.prev = new List<string>();
             this.isrev = isrev;
-
-            this.consensus = new ConsensusInstance();
         }
     }
 

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 
+// TODO: use a property loggin lib!
 namespace RAC.Errors
 {
 
