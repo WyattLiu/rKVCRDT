@@ -500,6 +500,7 @@ class TestRunner():
 TYPECODE_MAP = {
     "pnc": PNCExperimentData,
     "rc": RCExperimentData,
+    "bftc": RCExperimentData,
     "g": GExperimentData,
     "rg": RGExperimentData
 }
