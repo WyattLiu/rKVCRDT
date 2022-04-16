@@ -15,15 +15,21 @@ namespace RAC.Consensus
 
     public class BFTNodes
     {
-        public int id { set; get; }
+        private const int TIMEOUT = 200;
 
-        // TODO: shit should be a list?
-        public Dictionary<string, ConsensusInstance> currentConsensus { set; get; }
+        public int id { set; get; }
+        public int leader { set; get; }
+
+        public int sequenceNum { set; get; }
+
+
+        public Dictionary<string, ConsensusInstance> msgPool { set; get; }
 
         public BFTNodes(int id)
         {
             this.id = id;
-            this.currentConsensus = new Dictionary<string, ConsensusInstance>();
+            this.msgPool = new Dictionary<string, ConsensusInstance>();
+            this.leader = 0;
         }
 
         public string sign(string value)
@@ -47,11 +53,36 @@ namespace RAC.Consensus
             return packet;
         }
 
+        public void checkTimeout()
+        {
+            DateTime curtime = DateTime.Now;
+            foreach (var c in this.msgPool)
+            {
+                if ((curtime - c.Value.startime).TotalMilliseconds > TIMEOUT)
+                {
+                    c.Value.status = ConsensusStatus.failed;
+                }
+            }
+        }
 
+        public void consensusRequest(string cid, string value)
+        {
+            if (this.id == this.leader)
+            {
+                startConsensus(cid, value);
+            }
+            else
+            {
+                ConsensusMessage reqMsg = new ConsensusMessage(cid, ConsensusMessageType.request, this.id, null, null);
+                reqMsg.value = value;
+                Global.server.respQueue.Post(sendMsg(reqMsg, this.leader));
+            }
+
+        }
 
         public void startConsensus(string cid, string value)
         {
-
+            DEBUG("starting consensus for " + value);
             MD5 md5 = MD5.Create();
             byte[] digest = md5.ComputeHash(Encoding.Unicode.GetBytes(value));
             string sign = this.sign(digest.ToString());
@@ -60,7 +91,7 @@ namespace RAC.Consensus
 
             newConsensus.status = ConsensusStatus.prepare;
 
-            this.currentConsensus[newConsensus.cid] = newConsensus;
+            this.msgPool[newConsensus.cid] = newConsensus;
 
             ConsensusMessage ppMsg = new ConsensusMessage(newConsensus.cid, ConsensusMessageType.pre_prepare, this.id, digest, sign);
             ppMsg.value = value;
@@ -79,6 +110,9 @@ namespace RAC.Consensus
             DEBUG("Recieved new consensus request " + msg.ToString());
             switch (msg.type)
             {
+                case ConsensusMessageType.request:
+                    res = this.requestRecieved(msg);
+                    break;
                 case ConsensusMessageType.pre_prepare:
                     res = this.preprepareReceived(msg);
                     break;
@@ -91,6 +125,12 @@ namespace RAC.Consensus
             }
 
             if (res is not null) Global.server.respQueue.Post(res);
+        }
+
+        public MessagePacket requestRecieved(ConsensusMessage reqMsg)
+        {
+            startConsensus(reqMsg.cid, reqMsg.value);
+            return null;
         }
 
 
@@ -115,7 +155,7 @@ namespace RAC.Consensus
                 return null;
             }
 
-            this.currentConsensus[newConsensus.cid] = newConsensus;
+            this.msgPool[newConsensus.cid] = newConsensus;
 
             string sign = this.sign(newConsensus.digest.ToString());
             ConsensusMessage prepareMsg = new ConsensusMessage(newConsensus.cid, ConsensusMessageType.prepare, this.id, newConsensus.digest, sign);
@@ -130,7 +170,7 @@ namespace RAC.Consensus
         private MessagePacket prepareReceived(ConsensusMessage prepMsg)
         {
 
-            ConsensusInstance ongoingConsensus = this.currentConsensus[prepMsg.cid];
+            ConsensusInstance ongoingConsensus = this.msgPool[prepMsg.cid];
 
             // get 2f nodes
             ongoingConsensus.recievedPP++;
@@ -151,14 +191,12 @@ namespace RAC.Consensus
             {
                 // TODO: ?
                 LOG("prepMsg for " + prepMsg.cid + " failed because of unvalid current consensus");
-                ongoingConsensus.status = ConsensusStatus.failed;
                 return null;
             }
 
             if (!prepMsg.digest.SequenceEqual(ongoingConsensus.digest))
             {
                 LOG("prepMsg for " + prepMsg.cid + " failed because of incorrect digest");
-                ongoingConsensus.status = ConsensusStatus.failed;
                 return null;
             }
 
@@ -187,7 +225,7 @@ namespace RAC.Consensus
         private MessagePacket acceptReceived(ConsensusMessage commitMsg)
         {
 
-            ConsensusInstance ongoingConsensus = this.currentConsensus[commitMsg.cid];
+            ConsensusInstance ongoingConsensus = this.msgPool[commitMsg.cid];
 
             ongoingConsensus.recievedCommit++;
             if (ongoingConsensus.status != ConsensusStatus.commit)
@@ -214,7 +252,6 @@ namespace RAC.Consensus
             }
 
             return null;
-
 
         }
 

@@ -11,10 +11,11 @@ namespace RAC.Consensus
 {
     public enum ConsensusMessageType
     {
-        pre_prepare = 0,
-        prepare = 1,
-        commit = 2,
-        complete = 3
+        request,
+        pre_prepare,
+        prepare,
+        commit,
+        complete
 
     }
 

@@ -40,6 +40,7 @@ namespace RAC.Consensus
         public int recievedValidPrepare { set; get; } = 0;
         public int recievedCommit { set; get; } = 0;
         public int recievedValidCommit {set; get; } = 0;
+        public DateTime startime {set; get;}
 
         public ConsensusInstance(string cid, int proposer, string value, byte[] digest)
         {
@@ -47,6 +48,7 @@ namespace RAC.Consensus
             this.proposer = proposer;
             this.value = value;
             this.digest = digest;
+            this.startime = DateTime.Now;
         }
 
 

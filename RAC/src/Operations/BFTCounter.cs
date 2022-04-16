@@ -26,7 +26,7 @@ namespace RAC.Operations
             }
             catch (System.Collections.Generic.KeyNotFoundException)
             {
-                Global.memoryManager.history.Add(uid, new RAC.Consensus.BFTHistory(uid, this.Compensate));
+                Global.memoryManager.history.Add(uid, new RAC.History.OpHistory(uid, this.Compensate));
                 this.history = Global.memoryManager.history[uid];
 
             }
@@ -86,7 +86,7 @@ namespace RAC.Operations
 
             string opid = this.history.AddNewEntry(oldstate, this.payload, BFTCounterPayload.PayloadToStr);
 
-            Global.server.bftNode.startConsensus(opid, "+" + this.parameters.GetParam<int>(0).ToString());
+            Global.server.bftNode.consensusRequest(opid, "+" + this.parameters.GetParam<int>(0).ToString());
 
             Responses res = new Responses(Status.success);
             res.AddResponse(Dest.client, opid);
@@ -102,7 +102,7 @@ namespace RAC.Operations
 
             string opid = this.history.AddNewEntry(oldstate, this.payload, BFTCounterPayload.PayloadToStr);
 
-            Global.server.bftNode.startConsensus(opid, "-" + this.parameters.GetParam<int>(0).ToString());
+            Global.server.bftNode.consensusRequest(opid, "-" + this.parameters.GetParam<int>(0).ToString());
 
             Responses res = new Responses(Status.success);
             res.AddResponse(Dest.client, opid); 
