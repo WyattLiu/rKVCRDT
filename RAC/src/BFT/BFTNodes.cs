@@ -20,7 +20,7 @@ namespace RAC.Consensus
         public int id { set; get; }
         public int leader { set; get; }
 
-        public int sequenceNum { set; get; }
+        public int sequenceNum { set; get; } = 0;
 
 
         public Dictionary<string, ConsensusInstance> msgPool { set; get; }
@@ -86,8 +86,9 @@ namespace RAC.Consensus
             MD5 md5 = MD5.Create();
             byte[] digest = md5.ComputeHash(Encoding.Unicode.GetBytes(value));
             string sign = this.sign(digest.ToString());
+            this.sequenceNum++;
 
-            ConsensusInstance newConsensus = new ConsensusInstance(cid, this.id, value, digest);
+            ConsensusInstance newConsensus = new ConsensusInstance(cid, this.id, value, digest, this.sequenceNum);
 
             newConsensus.status = ConsensusStatus.prepare;
 
@@ -138,7 +139,7 @@ namespace RAC.Consensus
         {
 
 
-            ConsensusInstance newConsensus = new ConsensusInstance(ppMsg.cid, ppMsg.sender, ppMsg.value, ppMsg.digest);
+            ConsensusInstance newConsensus = new ConsensusInstance(ppMsg.cid, ppMsg.sender, ppMsg.value, ppMsg.digest, ppMsg.sequenceNum);
             newConsensus.status = ConsensusStatus.pre_prepare;
 
             if (!ppMsg.digest.SequenceEqual(MD5.Create().ComputeHash(Encoding.Unicode.GetBytes(ppMsg.value))))

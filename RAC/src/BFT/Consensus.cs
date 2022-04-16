@@ -41,14 +41,16 @@ namespace RAC.Consensus
         public int recievedCommit { set; get; } = 0;
         public int recievedValidCommit {set; get; } = 0;
         public DateTime startime {set; get;}
+        public int sequenceNum {set; get;}
 
-        public ConsensusInstance(string cid, int proposer, string value, byte[] digest)
+        public ConsensusInstance(string cid, int proposer, string value, byte[] digest, int sequenceNum)
         {
             this.cid = cid;
             this.proposer = proposer;
             this.value = value;
             this.digest = digest;
             this.startime = DateTime.Now;
+            this.sequenceNum = sequenceNum;
         }
 
 

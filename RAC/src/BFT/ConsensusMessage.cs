@@ -32,13 +32,16 @@ namespace RAC.Consensus
 
         public string sign { set; get; }
 
-        public ConsensusMessage(string cid, ConsensusMessageType type, int sender, byte[] digest, string sign)
+        public int sequenceNum {set; get;}
+
+        public ConsensusMessage(string cid, ConsensusMessageType type, int sender, byte[] digest, string sign, int sequenceNum=-1)
         {
             this.cid = cid;
             this.type = type;
             this.sender = sender;
             this.digest = digest;
             this.sign = sign;
+            this.sequenceNum = sequenceNum;
         }
 
         public string serialize()
