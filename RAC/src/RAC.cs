@@ -35,27 +35,27 @@ namespace RAC
             Config.replicaId = selfNode.nodeid;
 
             //set cpu cores
-            if (Config.MAX_CORE > 0)
-            {
-                ulong cpuAffin = 0;
-                int cores = System.Environment.ProcessorCount;
-                // nodes per server
-                int nps = cluster.numNodes / cluster.numServers;
+            // if (Config.MAX_CORE > 0)
+            // {
+            //     ulong cpuAffin = 0;
+            //     int cores = System.Environment.ProcessorCount;
+            //     // nodes per server
+            //     int nps = cluster.numNodes / cluster.numServers;
 
-                int affinPos = selfNode.nodeid;
+            //     int affinPos = selfNode.nodeid;
 
-                while (affinPos > nps - 1)
-                {
-                    affinPos -= nps;
-                }
+            //     while (affinPos > nps - 1)
+            //     {
+            //         affinPos -= nps;
+            //     }
 
-                for (int i = 0; i < Config.MAX_CORE; i++)
-                {
-                    cpuAffin |= (ulong)1 << (int)(cores - (affinPos * Config.MAX_CORE) - i - 1);
-                }
+            //     for (int i = 0; i < Config.MAX_CORE; i++)
+            //     {
+            //         cpuAffin |= (ulong)1 << (int)(cores - (affinPos * Config.MAX_CORE) - i - 1);
+            //     }
                 
-                System.Diagnostics.Process.GetCurrentProcess().ProcessorAffinity = (System.IntPtr)cpuAffin;
-            }
+            //     System.Diagnostics.Process.GetCurrentProcess().ProcessorAffinity = (System.IntPtr)cpuAffin;
+            // }
 
             server = new Server(Global.selfNode);
             profiler = new Profiler();

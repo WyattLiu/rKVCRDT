@@ -98,7 +98,10 @@ namespace RAC.Network
 
                         // TODO: fix this part
 
-                        Global.server.reqQueue.Post(msg);
+                        if (src == MsgSrc.client)
+                            Global.server.clientReqQueue.Post(msg);
+                        else if (src == MsgSrc.server)
+                            Global.server.clusterReqQueue.Post(msg);
 
 
                         // next, -1 to offset +1 from for loop

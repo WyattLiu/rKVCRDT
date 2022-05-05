@@ -447,7 +447,7 @@ class TestRunner():
                 temp.append((req[0], -1))
 
             elif (self.timing):
-                temp.append((req[0], end - start))
+                temp.append((req[0], (end - start)))
     
         self.results.latency.append(temp)
 
