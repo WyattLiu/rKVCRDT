@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 SERVER_PATH = str(Path(__file__).resolve().parent.parent.parent) + "/RAC"
-BUILD_PATH = SERVER_PATH + "/bin/Release/net5.0/Project_RAC"
+BUILD_PATH = SERVER_PATH + "/bin/Release/net6.0/Project_RAC"
 REMOTE_SCRIPT_PATH = "/home/ubuntu/Project_RAC/RACClient/src/startservers.py"
 START_PORT = 5000
 
