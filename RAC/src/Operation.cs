@@ -1,6 +1,7 @@
 #define EAGER
 #undef EAGER
 
+using System.Threading;
 using RAC.Payloads;
 using RAC.Errors;
 using static RAC.Errors.Log;
@@ -37,6 +38,9 @@ namespace RAC.Operations
         /// be saved by the Memory Manager for this operation.
         /// </summary>
         protected bool noSideEffect = false;
+
+        private bool __lockWasTaken = false;
+
 
         /// <summary>
         /// Constructor:
@@ -83,6 +87,7 @@ namespace RAC.Operations
             }
 #endif
 
+
             
         }
 
@@ -96,6 +101,7 @@ namespace RAC.Operations
                 Global.memoryManager.StorePayload(uid, payload);
                 DEBUG(uid + " successfully stored");
             }
+
         }
 
         // =================================!IMPORTANT!===========================================

@@ -540,6 +540,8 @@ def run_benchmark(workloadfile) -> Results:
     print("Initializing Data with " + str(total_objects) + " objects")
     tr.init_data()
 
+    time.sleep(5)
+
     print("Preping Ops with " + str(prep_ops_pre_obj) + " prep ops and " + str(num_reverse) + " reverses")
     tr.prep_ops(prep_ops_pre_obj, prep_ratio, num_reverse)
 

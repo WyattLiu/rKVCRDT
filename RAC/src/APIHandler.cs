@@ -158,6 +158,7 @@ namespace RAC
             return converterList[paramType].Item2;
         }
 
+        static object __lockObj = new Object();
 
         public static Responses Invoke(string typeCode, string uid, string apiCode, Parameters parameters)
         {
@@ -166,13 +167,19 @@ namespace RAC
 
             MethodInfo method = t.methodsList[apiCode];
 
-            var opObject = Convert.ChangeType(Activator.CreateInstance(opType, new object[]{uid, parameters}), opType);
-    
+            
+
+
             try
             {
-                Responses res = (Responses)method.Invoke(opObject, null);
-                MethodInfo saveMethod = opObject.GetType().GetMethod("Save");
-                saveMethod.Invoke(opObject, null);
+                var opObject = Convert.ChangeType(Activator.CreateInstance(opType, new object[]{uid, parameters}), opType);
+                Responses res = new Responses(Status.fail);
+                lock (__lockObj)
+                {
+                    res = (Responses)method.Invoke(opObject, null);
+                    MethodInfo saveMethod = opObject.GetType().GetMethod("Save");
+                    saveMethod.Invoke(opObject, null);
+                }
 
                 return res;
             }
@@ -183,6 +190,8 @@ namespace RAC
                         apiCode + " failed.", e.InnerException, false);
                 throw new OperationCanceledException();
             }
+
+
             
 
         }

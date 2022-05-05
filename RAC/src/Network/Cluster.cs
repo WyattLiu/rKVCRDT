@@ -120,15 +120,10 @@ namespace RAC.Network
             }
         }
 
-        public void send(MessagePacket msg)
+        public bool send(byte[] data)
         {
-            Byte[] data = msg.Serialize();
-            DEBUG("Sending the following message:\n" + msg);
-            if (!this.connection.SendAsync(data))
-            {
-                ERROR("Failure sending Msg: " + msg);
-            }
-            
+            return this.connection.SendAsync(data);
+
         }
 
         public void disconnect()
@@ -195,28 +190,45 @@ namespace RAC.Network
         public void Send(MessagePacket msg, Node destination)
         {
 
+            DEBUG("Sending the following message:\n" + msg);
+            var data = msg.Serialize();
+            if (!this._Send(data, destination))
+            {
+                ERROR("Failure sending Msg: " + msg); 
+            }
+
+        }
+
+        private bool _Send(byte[] data, Node destination)
+        {
             if (destination.isSelf)
-                return;
+                return true;
 
             int retry = 0;
             while (!destination.connection.IsConnected && retry++ <= MAX_RETRY)
                 destination.connect();
 
             if (destination.connection is null)
-                ERROR("Broadcast failed to cluster node " + destination.address + ":" + destination.clusterPort);
+                ERROR("Failure connection to cluster node " + destination.address + ":" + destination.clusterPort);
             else
             {
-                destination.send(msg);
+                return destination.send(data);
             }
 
+            return false;
         }
 
 
         private const int MAX_RETRY = 5;
         public void BroadCast(MessagePacket msg)
         {   
+            DEBUG("Broadcasting the following message:\n" + msg);      
+            var data = msg.Serialize(); 
             foreach (var n in nodes)
-                this.Send(msg, n);
+            {
+                if (!this._Send(data, n))
+                    ERROR("Broacast failed: " + msg);
+            }
         }
     }
 
