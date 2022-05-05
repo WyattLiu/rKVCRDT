@@ -114,7 +114,6 @@ namespace RAC.Network
         // ClusterListener - interserver communication
         public TcpHandler clusterListener;
 
-        public RAC.Consensus.BFTNodes bftNode{ get; set; }
 
 
         // threshold for stop reading if still no starter detected
@@ -129,7 +128,6 @@ namespace RAC.Network
             this.reqQueue = new BufferBlock<MessagePacket>();
             this.respQueue = new BufferBlock<MessagePacket>();
 
-            this.bftNode = new BFTNodes(cluster.selfNode.nodeid);
 
         }
 
@@ -143,15 +141,10 @@ namespace RAC.Network
                 {
                     DEBUG("Resparing response");
 
-                    if (msg.msgSrc == MsgSrc.bftnode)
-                    {
-                        bftNode.parseConsensusMessage(msg.content);
-                    }   
-                    else
-                    {
-                        Responses res = Parser.RunCommand(msg.content, msg.msgSrc);
-                        res.StageResponse(msg.connection);
-                    }
+
+                    Responses res = Parser.RunCommand(msg.content, msg.msgSrc);
+                    res.StageResponse(msg.connection);
+                    
                 }
                 catch (OperationCanceledException)
                 {

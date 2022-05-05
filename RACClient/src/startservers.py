@@ -20,7 +20,7 @@ BUILD_PATH = SERVER_PATH + "/bin/Release/net5.0/Project_RAC"
 REMOTE_SCRIPT_PATH = "/home/ubuntu/Project_RAC/RACClient/src/startservers.py"
 START_PORT = 5000
 
-SSH_KEY_FILE = "/home/ubuntu/cc.pem"
+SSH_KEY_FILE = "/home/ubuntu/bft-crdt.pem"
 
 
 def each_server_json(node_id: int, num_per_server: int, servers_list: list , print_addr: bool = False) -> str:

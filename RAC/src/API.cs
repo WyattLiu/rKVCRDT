@@ -95,18 +95,6 @@ namespace RAC
             AddNewAPI("RGraph", "Reverse", "r", "string");
 
 
-            // Reversible Counter
-            AddNewType("BFTCounter", "bftc");
-            AddNewAPI("BFTCounter", "GetValue", "g", "");
-            AddNewAPI("BFTCounter", "SetValue", "s", "int");
-            // Params: value - opid of related op, if "" then no relation
-            AddNewAPI("BFTCounter", "Increment", "i", "int, string");
-            AddNewAPI("BFTCounter", "Decrement", "d", "int, string");
-            // Params: -opid to be reversed - string
-            AddNewAPI("BFTCounter", "Reverse", "r", "string");
-            // Params: nvector, pvector, new relation pair
-            AddNewAPI("BFTCounter", "Synchronization", "y", "listi, listi, string");
-            // AddNewAPI("RCounter", "SynchronizeTombstone", "yr", "lists");
 
         }
     }
