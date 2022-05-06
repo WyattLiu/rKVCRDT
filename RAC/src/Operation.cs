@@ -51,15 +51,8 @@ namespace RAC.Operations
         {
             this.uid = uid;
             this.parameters = parameters;
+            this.payload =  (PayloadType) Global.memoryManager.GetPayload(uid);
 
-            try
-            {
-                this.payload = (PayloadType) Global.memoryManager.GetPayload(uid);
-            }
-            catch (PayloadNotFoundException) 
-            {
-                this.payload = null;
-            }
 
 #if EAGER
 
