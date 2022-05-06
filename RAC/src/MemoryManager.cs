@@ -20,22 +20,19 @@ namespace RAC
             history = new Dictionary<string, OpHistory>();
         }
 
-        public bool StorePayload(string uid, Payload payload)
+        public void StorePayload(string uid, Payload payload)
         {
-            storage[uid] = payload;
-            return true;
+            storage.TryAdd(uid, payload);
         }
 
         public Payload GetPayload(string uid)
         {
-            try
-            {
-                return storage[uid];
-            }
-            catch (KeyNotFoundException)
-            {
-                throw new PayloadNotFoundException();
-            }
+            if (storage.TryGetValue(uid, out var pl))
+                return pl;
+            else
+                return null;
+
+
         }
     }
 }
