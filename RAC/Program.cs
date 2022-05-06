@@ -7,7 +7,7 @@ namespace RAC
 {
     class Program
     {
-        static string VERSION = "17";
+        static string VERSION = "18";
 
         static int Main(string[] args)
         {

@@ -10,6 +10,8 @@ using NetCoreServer;
 using RAC.Errors;
 using static RAC.Errors.Log;
 using RAC.Consensus;
+using System.Threading;
+
 namespace RAC.Network
 {
 
@@ -218,7 +220,7 @@ namespace RAC.Network
                 // TODO: change this to client
                 this.server = new TcpHandler(this.address, this.clientCommPort, ref this.clientReqQueue, ref this.clientRespQueue);
 
-                this.clusterListener = new TcpHandler(this.address, this.clusterCommPort, ref this.clientReqQueue, ref this.clusterRespQueue);
+                this.clusterListener = new TcpHandler(this.address, this.clusterCommPort, ref this.clusterReqQueue, ref this.clusterRespQueue);
 
                 // Start listening for client requests.
                 this.server.Start();
@@ -230,7 +232,7 @@ namespace RAC.Network
                 while (true)
                 {
                     DEBUG("Waiting for a connection... ");
-                    Console.ReadLine();
+                    Thread.Sleep(10000);
                 }
             }
             catch (SocketException e)
