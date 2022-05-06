@@ -26,8 +26,8 @@ namespace RAC
 
             var handler0 = Global.server.HandleRequestAsync(Global.server.clientReqQueue);
             var handler1 = Global.server.SendResponseAsync(Global.server.clientRespQueue);
-            var handler2 = Global.server.HandleRequestAsync(Global.server.clusterReqQueue);
-            var handler3 = Global.server.SendResponseAsync(Global.server.ClusterRespQueue);
+            // var handler2 = Global.server.HandleRequestAsync(Global.server.clusterReqQueue);
+            // var handler3 = Global.server.SendResponseAsync(Global.server.ClusterRespQueue);
 
             Global.server.Run();
 

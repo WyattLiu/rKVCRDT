@@ -101,7 +101,7 @@ namespace RAC.Network
                         if (src == MsgSrc.client)
                             Global.server.clientReqQueue.Post(msg);
                         else if (src == MsgSrc.server)
-                            Global.server.clusterReqQueue.Post(msg);
+                            Global.server.clientReqQueue.Post(msg);
 
 
                         // next, -1 to offset +1 from for loop
