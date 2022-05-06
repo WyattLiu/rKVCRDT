@@ -142,11 +142,12 @@ def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfi
 
         tp_result.append(p_result)
         mem_result.append(pm_result)
+    run_dir = 'results/' + rfilename + '/'
+    os.mkdir(run_dir)
 
-
-    parse_tpresult(tp_result, labels, rfilename + "_tp.csv")
-    parse_tpresult(mem_result, labels, rfilename + "_mem.csv")
-    parse_latencyresults(latency_results, rfilename + "_lt.txt")
+    parse_tpresult(tp_result, labels, run_dir + rfilename + "_tp.csv")
+    parse_tpresult(mem_result, labels, run_dir + rfilename + "_mem.csv")
+    parse_latencyresults(latency_results, run_dir + rfilename + "_lt.txt")
 
 
     print("Experiment complete")
@@ -154,14 +155,14 @@ def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfi
 
 
 def parse_tpresult(result, labels, rfilename):
-    with open('results/' + rfilename, 'w') as f:
+    with open(rfilename, 'w') as f:
         writer = csv.DictWriter(f, fieldnames=labels)
         writer.writeheader()
         for elem in result:
             writer.writerow(elem)
 
 def parse_latencyresults(results: dict, rfilename):
-    with open('results/' + rfilename, 'w') as f:
+    with open(rfilename, 'w') as f:
         for k, v in results.items():
             f.write("EXP:" + k + "\n")
             for l in v:
