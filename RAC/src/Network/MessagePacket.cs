@@ -67,9 +67,10 @@ namespace RAC.Network
 
 
 
-        public static int ParseReceivedMessage(byte[] cache, in ConnectionSession from)
+        public static int ParseReceivedMessage(byte[] cache, in ConnectionSession from, out MessagePacket msg)
         {
             int parsedSize = 0;
+            msg = null;
             for (int i = 0; i < (int)cache.Length; i++)
             {
                 // look for the first "\f"
@@ -94,14 +95,8 @@ namespace RAC.Network
 
                         string content = Encoding.UTF8.GetString(cache, i + HEADER_SIZE, contentlen); // cache.ExtractString(i + HEADER_SIZE, contentlen);
 
-                        MessagePacket msg = new MessagePacket(src, contentlen, content, from);
+                        msg = new MessagePacket(src, contentlen, content, from);
 
-                        // TODO: fix this part
-
-                        if (src == MsgSrc.client)
-                            Global.server.clientReqQueue.Post(msg);
-                        else if (src == MsgSrc.server)
-                            Global.server.clientReqQueue.Post(msg);
 
 
                         // next, -1 to offset +1 from for loop

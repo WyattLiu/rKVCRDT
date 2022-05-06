@@ -47,7 +47,11 @@ namespace RAC.Network
             cache.AddRange(temp);
 
             DEBUG("Receiving the following message with length: " + size + " bytes \n" + System.Text.Encoding.Default.GetString(cache.ToArray()));
-            int handledSize = MessagePacket.ParseReceivedMessage(cache.ToArray(), this);
+            MessagePacket msg;
+            int handledSize = MessagePacket.ParseReceivedMessage(cache.ToArray(), this, out msg);
+
+            if (msg is not null)
+                this.reqQueue.Post<MessagePacket>(msg);
 
             if (handledSize == cache.Count)
                 cache.Clear();
@@ -99,8 +103,8 @@ namespace RAC.Network
         public BufferBlock<MessagePacket> clientReqQueue;
         public BufferBlock<MessagePacket> clientRespQueue;
         // msg queue to handle cluster comm
-        // public BufferBlock<MessagePacket> clusterReqQueue;
-        // public BufferBlock<MessagePacket> ClusterRespQueue;
+        public BufferBlock<MessagePacket> clusterReqQueue;
+        public BufferBlock<MessagePacket> clusterRespQueue;
 
 
         // no need for thread safety cuz one only write and the other only read
@@ -131,8 +135,8 @@ namespace RAC.Network
             this.clientReqQueue = new BufferBlock<MessagePacket>();
             this.clientRespQueue = new BufferBlock<MessagePacket>();
 
-            // this.clusterReqQueue = new BufferBlock<MessagePacket>();
-            // this.ClusterRespQueue = new BufferBlock<MessagePacket>();
+            this.clusterReqQueue = new BufferBlock<MessagePacket>();
+            this.clusterRespQueue = new BufferBlock<MessagePacket>();
 
 
         }
@@ -214,7 +218,7 @@ namespace RAC.Network
                 // TODO: change this to client
                 this.server = new TcpHandler(this.address, this.clientCommPort, ref this.clientReqQueue, ref this.clientRespQueue);
 
-                this.clusterListener = new TcpHandler(this.address, this.clusterCommPort, ref this.clientReqQueue, ref this.clientReqQueue);
+                this.clusterListener = new TcpHandler(this.address, this.clusterCommPort, ref this.clientReqQueue, ref this.clusterRespQueue);
 
                 // Start listening for client requests.
                 this.server.Start();
@@ -242,10 +246,9 @@ namespace RAC.Network
                 this.clientReqQueue.Complete();
                 this.clientRespQueue.Complete();
 
-                // this.clusterReqQueue.Complete();
-                // this.clusterReqQueue.Complete();
-                // this.clusterReqQueue.Complete();
-                // this.clusterReqQueue.Complete();
+                this.clusterReqQueue.Complete();
+                this.clusterRespQueue.Complete();
+
             }
         }
 

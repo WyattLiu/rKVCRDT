@@ -29,22 +29,24 @@ def each_server_json(node_id: int, num_per_server: int, servers_list: list , pri
 
     selfip = socket.gethostbyname(socket.gethostname())
 
-    i = 0
+    j = 0
     for ip in servers_list:
+        i = 0
         for _ in range(num_per_server):
             isself = False
-            if (i == node_id and ip == selfip):
+            if (j == node_id and ip == selfip):
                 isself = True
-
+            port = START_PORT + i
             cfg = {
-                "nodeid": i,
+                "nodeid": node_id,
                 "address": ip,
-                "port": START_PORT + i,
+                "port": port,
                 "isSelf": isself
             }
             res.append(cfg)
-            addresses.append(selfip + ":" + str(START_PORT + i))
+            addresses.append(ip + ":" + str(port))
             i += 1
+            j += 1
 
     if print_addr:
         print("Server addresses:")

@@ -7,7 +7,7 @@ namespace RAC
 {
     class Program
     {
-        static string VERSION = "15";
+        static string VERSION = "16";
 
         static int Main(string[] args)
         {
@@ -26,8 +26,8 @@ namespace RAC
 
             var handler0 = Global.server.HandleRequestAsync(Global.server.clientReqQueue);
             var handler1 = Global.server.SendResponseAsync(Global.server.clientRespQueue);
-            // var handler2 = Global.server.HandleRequestAsync(Global.server.clusterReqQueue);
-            // var handler3 = Global.server.SendResponseAsync(Global.server.ClusterRespQueue);
+            var handler2 = Global.server.HandleRequestAsync(Global.server.clusterReqQueue);
+            var handler3 = Global.server.SendResponseAsync(Global.server.clusterRespQueue);
 
             Global.server.Run();
 
