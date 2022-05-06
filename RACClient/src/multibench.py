@@ -18,7 +18,7 @@ import datetime
 
 
 REDO = 0
-BUILD_FLAG = False
+BUILD_FLAG = True
 
 
 def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfilename, server_list, local = False):

@@ -29,7 +29,7 @@ namespace RAC.Network
         public int length { get; }
         public string content { get; }
         // server id of reciving node, if not broadcast
-        public int to { get; } 
+        public int to { get; }
 
         // --meta data--
         public ConnectionSession connection { get; set; }
@@ -43,7 +43,7 @@ namespace RAC.Network
             this.msgSrc = src;
             this.length = length;
             this.content = content;
-            
+
             this.connection = from;
         }
 
@@ -75,7 +75,7 @@ namespace RAC.Network
             {
                 // look for the first "\f"
                 if (cache[i] == '\f')
-                {   
+                {
                     // if header cut-off
                     if (i + HEADER_SIZE > cache.Length)
                         break;
@@ -126,14 +126,26 @@ namespace RAC.Network
             byte[] lenb = BitConverter.GetBytes(this.length);
             byte[] contentb = Encoding.UTF8.GetBytes(this.content);
 
-            List<byte> msgBytes = new List<byte>();
-            msgBytes.Add((byte)'\f');
-            msgBytes.AddRange(srcb);
-            msgBytes.AddRange(lenb);
-            msgBytes.AddRange(contentb);
+            // List<byte> msgBytes = new List<byte>();
+            // msgBytes.Add((byte)'\f');
+            // msgBytes.AddRange(srcb);
+            // msgBytes.AddRange(lenb);
+            // msgBytes.AddRange(contentb);
 
-            return msgBytes.ToArray();
+
+
+
+            byte[] data = new byte[HEADER_SIZE + contentb.Length];
+            data[0] = (byte)'\f';
+            Buffer.BlockCopy(srcb, 0, data, 1, srcb.Length);
+            Buffer.BlockCopy(lenb, 0, data, 1 + srcb.Length, lenb.Length);
+            Buffer.BlockCopy(contentb, 0, data, HEADER_SIZE, content.Length);
+
+
+            //return msgBytes.ToArray();
+            return data;
         }
+
 
         public override string ToString()
         {

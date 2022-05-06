@@ -48,7 +48,7 @@ namespace RAC.Network
             Array.Copy(buffer, (int)offset, temp, 0, (int)size);
             cache.AddRange(temp);
 
-            DEBUG("Receiving the following message with length: " + size + " bytes \n" + System.Text.Encoding.Default.GetString(cache.ToArray()));
+            DEBUG("Receiving the following message with length: " + size + " bytes \n" + System.Text.Encoding.Default.GetString(temp));
             MessagePacket msg;
             int handledSize = MessagePacket.ParseReceivedMessage(cache.ToArray(), this, out msg);
 
