@@ -143,7 +143,7 @@ def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfi
         tp_result.append(p_result)
         mem_result.append(pm_result)
     run_dir = 'results/' + rfilename + '/'
-    os.mkdir(run_dir)
+    os.makedirs(run_dir, exist_ok=True)
 
     parse_tpresult(tp_result, labels, run_dir + rfilename + "_tp.csv")
     parse_tpresult(mem_result, labels, run_dir + rfilename + "_mem.csv")

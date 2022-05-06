@@ -67,7 +67,7 @@ class Results():
         for l in self.latency:
             for lt in l:
                 if lt[1] != 0:
-                    self.latency_result.append((lt[0], lt[1] / 1000000))
+                    self.latency_result.append((lt[0], lt[1] / 1000000, lt[2]))
                     flag = True
 
             if flag:
@@ -361,6 +361,8 @@ class TestRunner():
         self.crdts = [self.data.CRDT(s) for s in self.connections]
         self.timing = False
         self.do_reverse = False
+        self.do_measure_reverse = False
+        self.num_reverse = 0
         self.results = Results(self.num_clients)
         self.rid = SharedManager.dict()
         self.sleeptime = 0
@@ -423,6 +425,7 @@ class TestRunner():
         temp = []
         last_rid = {}
         for req in list_reqs:
+            # print("Doing " + str(req))
             if self.sleeptime > 0:
                 time.sleep(self.sleeptime)
 
@@ -447,7 +450,7 @@ class TestRunner():
                 temp.append((req[0], -1))
 
             elif (self.timing):
-                temp.append((req[0], (end - start)))
+                temp.append((req[0], (end - start), end))
     
         self.results.latency.append(temp)
 
@@ -455,6 +458,13 @@ class TestRunner():
     def prep_ops(self, total_prep_ops, pre_ops_ratio, reverse=0):
         if reverse > 0: 
             self.do_reverse = True 
+        if total_prep_ops == 1:
+            print("Information: total_prep_ops == 1, do_measure_reverse set to True")
+            self.do_measure_reverse = True
+            self.num_reverse = reverse
+            self.do_reverse = False
+            reverse = 0
+
         reqs = self.data.generate_op_values(total_prep_ops, pre_ops_ratio, reverse)
         self.split_work(reqs)
 
@@ -464,12 +474,20 @@ class TestRunner():
         throughput = limit # of ops per second per worker, if 0 then unlimited
         '''
         self.do_reverse = False
+        if self.do_measure_reverse == True:
+            self.do_reverse = True
+            print("Information: now worker will see do_reverse == True")
+        
         self.timing = True
 
         if throughput > 0:
             self.sleeptime = sleep_time(throughput, self.num_clients)
-
-        reqs = self.data.generate_op_values(ops_per_object, ops_ratio)
+        
+        
+        reqs = self.data.generate_op_values(ops_per_object, ops_ratio, self.num_reverse)
+        #reqs = self.data.generate_op_values(ops_per_object, ops_ratio)
+        print(len(reqs))
+        print(len(reqs[0]))
         start = time.time()
         self.split_work(reqs)
         end = time.time()
