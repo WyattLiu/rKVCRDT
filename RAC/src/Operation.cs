@@ -62,29 +62,26 @@ namespace RAC.Operations
             }
 
 #if EAGER
-            try
+
+            if (!Global.memoryManager.history.TryGetValue(uid, out this.history))
             {
-                this.history = (OpHistoryEager)Global.memoryManager.history[uid];
+                this.history = new OpHistory(uid, this.Compensate);
+                Global.memoryManager.history[uid] = this.history;
+            } 
+            else
+            {
                 if (!(this is HistoryHandler))
                     history.Compensate = this.Compensate;
             }
-            catch (System.Collections.Generic.KeyNotFoundException)
-            {
-                Global.memoryManager.history.Add(uid, new OpHistoryEager(uid, this.Compensate));
-                this.history = (OpHistoryEager)Global.memoryManager.history[uid];
 
-            }
 #else 
-            try
-            {
-                this.history = Global.memoryManager.history[uid];
-            }
-            catch (System.Collections.Generic.KeyNotFoundException)
-            {
-                Global.memoryManager.history.Add(uid, new OpHistory(uid, this.Compensate));
-                this.history = Global.memoryManager.history[uid];
 
+            if (!Global.memoryManager.history.TryGetValue(uid, out this.history))
+            {
+                this.history = new OpHistory(uid, this.Compensate);
+                Global.memoryManager.history[uid] = this.history;
             }
+
 #endif
 
 

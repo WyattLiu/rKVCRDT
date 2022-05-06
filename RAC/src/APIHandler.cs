@@ -44,7 +44,7 @@ namespace RAC
                     ERROR("Unable to load method: " + methodName +
                             " Param " + mp +
                             " does not exist in parameter/converter list");
-                    return; 
+                    return;
                 }
             }
 
@@ -52,13 +52,13 @@ namespace RAC
             {
                 this.methodsList.Add(apiCode, m);
                 this.paramsList.Add(apiCode, new List<string>(methodParams));
-                
+
                 checklist.Add(methodName);
             }
             catch (System.ArgumentException)
             {
-                    ERROR("Unable to load method: " + methodName + " - Provided duplicated apicode " + apiCode);
-                    return; 
+                ERROR("Unable to load method: " + methodName + " - Provided duplicated apicode " + apiCode);
+                return;
             }
 
         }
@@ -119,13 +119,13 @@ namespace RAC
             catch (TypeLoadException)
             {
                 WARNING("Unable to load CRDT: " + typeName);
-                
+
             }
 
         }
-        
+
         public static void AddNewAPI(string typeName, string methodName, string apiCode, string methodParams)
-        {            
+        {
             Type t;
 
             try
@@ -158,7 +158,6 @@ namespace RAC
             return converterList[paramType].Item2;
         }
 
-        static object __lockObj = new Object();
 
         public static Responses Invoke(string typeCode, string uid, string apiCode, Parameters parameters)
         {
@@ -167,23 +166,21 @@ namespace RAC
 
             MethodInfo method = t.methodsList[apiCode];
 
-            
+
 
 
             try
             {
-                var opObject = Convert.ChangeType(Activator.CreateInstance(opType, new object[]{uid, parameters}), opType);
+                var opObject = Convert.ChangeType(Activator.CreateInstance(opType, new object[] { uid, parameters }), opType);
                 Responses res = new Responses(Status.fail);
-                lock (__lockObj)
-                {
-                    res = (Responses)method.Invoke(opObject, null);
-                    MethodInfo saveMethod = opObject.GetType().GetMethod("Save");
-                    saveMethod.Invoke(opObject, null);
-                }
+
+                res = (Responses)method.Invoke(opObject, null);
+                MethodInfo saveMethod = opObject.GetType().GetMethod("Save");
+                saveMethod.Invoke(opObject, null);
 
                 return res;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 ERROR("Request execution of " + typeCode + " with uid: " +
                         uid + ", of op:" +
@@ -192,7 +189,7 @@ namespace RAC
             }
 
 
-            
+
 
         }
 

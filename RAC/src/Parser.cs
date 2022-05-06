@@ -1,5 +1,5 @@
-using System; 
-using System.IO; 
+using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using RAC.Errors;
@@ -8,9 +8,9 @@ using RAC.Network;
 using static RAC.Errors.Log;
 
 namespace RAC
-{   
+{
     public static partial class Parser
-    {   
+    {
         // // TODO: remove theseeeees
         // private const string typePrefix = "TYPE:";
         // private const string uidPrefix = "UID:";
@@ -38,7 +38,7 @@ namespace RAC
                     API.StringToType toType = API.GetToTypeConverter(pmTypesConverters[i]);
                     data = toType(input[i]);
                     pm.AddParam(i, data);
-                } 
+                }
                 catch (Exception e)
                 {
                     ERROR("Param building failed with: " + apiCode + " of " + typeCode, e);
@@ -57,20 +57,20 @@ namespace RAC
             apiCode = "";
             uid = "";
             pm = null;
-            Clock clock = null; 
+            Clock clock = null;
 
-            using (StringReader reader = new StringReader(cmd)) 
-            { 
+            using (StringReader reader = new StringReader(cmd))
+            {
                 string line;
-                bool onParam = false; 
+                bool onParam = false;
                 string paramstr = "";
 
-                while ((line = reader.ReadLine()) != null) 
-                { 
+                while ((line = reader.ReadLine()) != null)
+                {
                     if (line.Length > 1 && line[1] == '&')
                     {
 
-                        string content = line.Remove(0, 2).Trim('\n',' ');
+                        string content = line.Remove(0, 2).Trim('\n', ' ');
 
                         if (line[0] == 't')
                             typeCode = content;
@@ -90,7 +90,7 @@ namespace RAC
                                 {
                                     return false;
                                 }
-                            } 
+                            }
                         }
                         else if (line[0] == 'p')
                         {
@@ -125,7 +125,7 @@ namespace RAC
                         //             return false;
                         //         }
                         //     } 
-                            
+
                         // } 
                         // else if (line.StartsWith(paramPrefix, StringComparison.Ordinal))
                         // {
@@ -144,7 +144,7 @@ namespace RAC
                         //         paramstr += line;
                         // }
 
-                    } 
+                    }
                     else if (onParam)
                     {
                         // in paramstring block
@@ -159,11 +159,13 @@ namespace RAC
                 // last param
                 if (onParam)
                     parameters.Add(paramstr);
-            } 
+            }
 
             pm = ParamBuilder(typeCode, apiCode, parameters);
             return true;
         }
+
+        static object __lockObj = new Object();
 
         public static Responses RunCommand(string cmd, MsgSrc source)
         {
@@ -180,9 +182,11 @@ namespace RAC
                 return res;
             }
 
+            lock (__lockObj)
+            {
+                res = API.Invoke(typeCode, uid, apiCode, pm);
+            }
 
-            res = API.Invoke(typeCode, uid, apiCode, pm);
-            
             // stats
             if (source == MsgSrc.client)
             {
@@ -208,7 +212,7 @@ namespace RAC
 
             API.TypeToString toStr = null;
             List<string> pmTypesConverters = API.typeList[API.typeCodeList[typeCode]].paramsList[apiCode];
-            
+
             for (int i = 0; i < pm.size; i++)
             {
                 object o = pm.AllParams()[i];
