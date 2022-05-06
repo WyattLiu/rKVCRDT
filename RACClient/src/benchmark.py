@@ -425,7 +425,7 @@ class TestRunner():
         temp = []
         last_rid = {}
         for req in list_reqs:
-            # print("Doing " + str(req))
+            #print("Doing " + str(req))
             if self.sleeptime > 0:
                 time.sleep(self.sleeptime)
 
@@ -437,7 +437,7 @@ class TestRunner():
                 else:
                     try:
                         res = self.data.op_execute(crdt, req)
-                        if res[1][0] != "":
+                        if res[1][0] != "" and req[0] != "g":
                             last_rid[req[1]] = res[1][0] 
                     except Exception:
                         continue
@@ -451,7 +451,7 @@ class TestRunner():
 
             elif (self.timing):
                 temp.append((req[0], (end - start), end))
-    
+        
         self.results.latency.append(temp)
 
 
@@ -486,8 +486,8 @@ class TestRunner():
         
         reqs = self.data.generate_op_values(ops_per_object, ops_ratio, self.num_reverse)
         #reqs = self.data.generate_op_values(ops_per_object, ops_ratio)
-        print(len(reqs))
-        print(len(reqs[0]))
+        print("num objects: " + str(len(reqs)))
+        print("ops per object: " + str(len(reqs[0])))
         start = time.time()
         self.split_work(reqs)
         end = time.time()

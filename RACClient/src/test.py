@@ -70,7 +70,7 @@ if __name__ == "__main__":
         "prep_ratio": [1, 0, 0],
 
 
-        "ops_per_object": 1000,
+        "ops_per_object": 900,
         "op_ratio": [0.25, 0.25, 0.5],
         "target_throughput": 0
     }
