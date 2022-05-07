@@ -39,6 +39,9 @@ if __name__ == "__main__":
     plt.xlabel("Throughput (ops/s)")
     plt.ylabel("Median Latency (ms)")
     plt.grid(True)
+    ax1.set_xscale('log')
+    ax1.set_yscale('log')
+
     plt.xscale('log')
     plt.yscale('log')
 

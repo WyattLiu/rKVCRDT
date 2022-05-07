@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from multibench import *
+import multibench
 
 # Insturction:
 # 1. Make a copy of this file and rename to run_multi_bench.py
@@ -71,9 +72,13 @@ if __name__ == "__main__":
 
 
         "ops_per_object": 900,
-        "op_ratio": [0.25, 0.25, 0.5],
+        "op_ratio": [0.5, 0.5, 0],
         "target_throughput": 0
     }
-
-    run_experiment(test, "client_multiplier", "total_objects", "test_1_client_insert", SERVER_LIST, True)
-
+    multibench.run_name = "sweep"
+    i = 1;
+    while i < 10:
+        print("Running client_multiplier " + str(i))
+        test["client_multiplier"] = [i]
+        run_experiment(test, "client_multiplier", "total_objects", "test_1_client_insert_" + str(i), SERVER_LIST, True)
+        i += 1

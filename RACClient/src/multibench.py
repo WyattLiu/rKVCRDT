@@ -19,7 +19,7 @@ import datetime
 
 REDO = 1
 BUILD_FLAG = False
-
+run_name = "default"
 
 def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfilename, server_list, local = False):
 
@@ -142,7 +142,9 @@ def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfi
 
         tp_result.append(p_result)
         mem_result.append(pm_result)
-    run_dir = 'results/' + rfilename + '/'
+    
+    global run_name
+    run_dir = 'results/' + run_name + '/'
     os.makedirs(run_dir, exist_ok=True)
 
     parse_tpresult(tp_result, labels, run_dir + rfilename + "_tp.csv")
