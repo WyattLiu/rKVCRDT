@@ -51,25 +51,19 @@ namespace RAC.Operations
         {
             this.uid = uid;
             this.parameters = parameters;
+            this.payload =  (PayloadType) Global.memoryManager.GetPayload(uid);
 
-            try
-            {
-                this.payload = (PayloadType) Global.memoryManager.GetPayload(uid);
-            }
-            catch (PayloadNotFoundException) 
-            {
-                this.payload = null;
-            }
 
 #if EAGER
-
-            if (!Global.memoryManager.history.TryGetValue(uid, out this.history))
+            OpHistory temp;
+            if (!Global.memoryManager.history.TryGetValue(uid, out temp))
             {
-                this.history = new OpHistory(uid, this.Compensate);
+                this.history = new OpHistoryEager(uid, this.Compensate);
                 Global.memoryManager.history[uid] = this.history;
             } 
             else
             {
+                this.history = (OpHistoryEager) temp;
                 if (!(this is HistoryHandler))
                     history.Compensate = this.Compensate;
             }

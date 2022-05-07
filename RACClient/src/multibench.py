@@ -17,9 +17,11 @@ import datetime
 # 5. stop servers
 
 
-REDO = 1
-BUILD_FLAG = False
+
+REDO = 0
+BUILD_FLAG = True
 run_name = "default"
+
 
 def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfilename, server_list, local = False):
 
@@ -85,7 +87,6 @@ def run_experiment(wokload_config: dict, prime_variable, secondary_variable, rfi
                         num_server, server_list[0:wokload_config["use_server"]], BUILD_FLAG)
 
                 #addresses = ["192.168.41.136:5000", "192.168.41.136:5001"]
-
                 # only build once per run
                 if BUILD_FLAG:
                     BUILD_FLAG = False

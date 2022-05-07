@@ -29,22 +29,24 @@ def each_server_json(node_id: int, num_per_server: int, servers_list: list , pri
 
     selfip = socket.gethostbyname(socket.gethostname())
 
-    i = 0
+    id_counter = 0
     for ip in servers_list:
+        port_counter = 0
         for _ in range(num_per_server):
             isself = False
-            if (i == node_id and ip == selfip):
+            if (id_counter == node_id and ip == selfip):
                 isself = True
-
+            port = START_PORT + port_counter
             cfg = {
-                "nodeid": i,
+                "nodeid": node_id,
                 "address": ip,
-                "port": START_PORT + i,
+                "port": port,
                 "isSelf": isself
             }
             res.append(cfg)
-            addresses.append(selfip + ":" + str(START_PORT + i))
-            i += 1
+            addresses.append(ip + ":" + str(port))
+            port_counter += 1
+            id_counter += 1
 
     if print_addr:
         print("Server addresses:")
@@ -82,6 +84,9 @@ def build_server():
     subprocess.Popen(
             ["dotnet", "build", "--configuration", "Release", SERVER_PATH])
 
+
+list_of_logs = []
+
 def start_server(num_server, servers_list = []) -> list:
 
     if not Path(BUILD_PATH).exists():
@@ -95,12 +100,13 @@ def start_server(num_server, servers_list = []) -> list:
     for i in range(num_server):
         cfg = cwd + "/cluster_config." + str(i) + ".json"
         flog = open("log." + str(i) + ".txt", "w")
+        list_of_logs.append(flog)
         proc = subprocess.Popen(
             [BUILD_PATH, cfg], stdout=flog, stderr=flog)
         pid = str(proc.pid)
         print(pid)
         ftemp.write(pid + "\n")
-        time.sleep(1)
+        time.sleep(0.1)
 
     ftemp.close()
 
@@ -110,7 +116,7 @@ def start_server(num_server, servers_list = []) -> list:
 def start_server_remote(num_server, servers_list, build) -> list:
     ips_arg = ",".join(servers_list)
     ip_port_list = []
-    i = 0
+    
     for ip in servers_list:
 
         if (build):
@@ -120,6 +126,7 @@ def start_server_remote(num_server, servers_list, build) -> list:
         proc = subprocess.run(
             ["ssh", "-i", SSH_KEY_FILE, "ubuntu@" + ip, "python3 " + REMOTE_SCRIPT_PATH + " rstart " + str(num_server) + " " + ips_arg])
         
+        i = 0
         for _ in range(num_server):
             ip_port_list.append(ip + ":" + str(START_PORT + i))
             i += 1
@@ -142,13 +149,14 @@ def stop_server():
     try:
         with open("temp.txt", "r") as ftemp:
             pid = int(ftemp.readline())
-            print("Server stopped with pid:")
+            print("Stopping servers:")
             while(pid):
                 print(pid)
                 try:
                     os.kill(pid, signal.SIGTERM)
-                    print(pid)
+                    print("is killed")
                 except OSError:
+                    print("cannot be killed killed")
                     continue
                 finally:
                     try:
@@ -158,6 +166,9 @@ def stop_server():
         
         # duh
         subprocess.run(["killall", "Project_RAC"])
+
+        for flog in list_of_logs:
+            flog.close()
 
     except FileNotFoundError:
         raise IndentationError("Servers are not started!")

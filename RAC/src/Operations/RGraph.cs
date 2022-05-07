@@ -36,6 +36,7 @@ namespace RAC.Operations
         {
 
             Responses res = new Responses(Status.success);
+            Dictionary<string, int> verticesCache = new Dictionary<string, int>();
 
 #if EAGER
 #else
@@ -69,6 +70,8 @@ namespace RAC.Operations
             foreach (var v in this.payload.vertices)
             {
                 // remove
+                if (!verticesCache.TryAdd(v.value, 0))
+                    verticesCache[v.value] += 1;
                 sb.Append(v.value + "|");
             }
 
@@ -80,8 +83,8 @@ namespace RAC.Operations
                 string v2 = e.Item1.v2;
 
                 // remove
-                if (lookup(v1) == (null, null) ||
-                    lookup(v2) == (null, null))
+
+                if (!verticesCache.TryGetValue(v1, out _) || !verticesCache.TryGetValue(v2, out _) )
                     continue;
                 else
                     sb.Append("<" + v1 + "," + v2 + ">");
@@ -94,14 +97,21 @@ namespace RAC.Operations
             foreach (var v in this.payload.vertices)
             {
                 // remove
+                if (!verticesCache.TryAdd(v.value, 0))
+                    verticesCache[v.value] += 1;
+
                 if (!removedVertices.Contains(v))
+                {
                     sb.Append(v.value + "|");
+                    verticesCache[v.value] += 1;
+                }
             }
 
             // add back
             foreach (var v in addedVertices)
             {
                 sb.Append(v.value + "|");
+                verticesCache[v.value] += 1;
             }
 
             sb.Append("\nEdges:\n");
@@ -112,8 +122,8 @@ namespace RAC.Operations
                 string v2 = e.Item1.v2;
 
                 // remove
-                if (lookup(v1) == (null, null) ||
-                    lookup(v2) == (null, null) ||
+                if (!verticesCache.TryGetValue(v1, out _) ||
+                    !verticesCache.TryGetValue(v2, out _) ||
                     removedEdges.Contains(e))
                     continue;
                 else
@@ -346,16 +356,31 @@ namespace RAC.Operations
         private ((string, string), string) lookup(string v1, string v2)
         {
 
-            if (lookup(v1) == (null, null) || lookup(v2) == (null, null))
-                return ((null, null), null);
-
-            foreach (var item in this.payload.edges)
+            if (checktwovertices(v1, v2))
             {
-                if (item.Item1.v1 == v1 && item.Item1.v2 == v2)
-                    return item;
+                foreach (var item in this.payload.edges)
+                {
+                    if (item.Item1.v1 == v1 && item.Item1.v2 == v2)
+                        return item;
+                }
             }
 
             return ((null, null), null);
+        }
+
+        private bool checktwovertices(string v1, string v2)
+        {
+            bool found1 = false, found2 = false;
+            foreach (var item in this.payload.vertices)
+            {
+                if (item.value == v1)
+                    found1 = true;
+                else if (item.value == v2)
+                    found2 = true;
+            }
+
+            return found1 && found2;
+
         }
 
         public override Responses Synchronization()

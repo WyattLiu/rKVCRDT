@@ -15,7 +15,7 @@ namespace RAC.Operations
         private const int TAG_LEN = 8;
 
         // todo: set this to its typecode
-        public override string typecode { get; set; } = "gh";
+        public override string typecode { get; set; } = "g";
 
         public Graph(string uid, Parameters parameters) : base(uid, parameters)
         {
@@ -31,23 +31,32 @@ namespace RAC.Operations
 
             sb.Append("Vertices:\n");
 
+            Dictionary<string, int> verticesCache = new Dictionary<string, int>();
+
             foreach (var v in this.payload.vertices)
+            {
+                if (!verticesCache.TryAdd(v.value, 0))
+                    verticesCache[v.value] += 1;
                 sb.Append(v.value + "|");
+            }
 
             sb.Append("\nEdges:\n");
+
+            
 
             foreach (var e in this.payload.edges)
             {
                 string v1 = e.Item1.v1;
                 string v2 = e.Item1.v2;
 
-                if (lookup(v1) == (null, null) || lookup(v2) == (null, null))
+                if (!verticesCache.TryGetValue(v1, out _) || !verticesCache.TryGetValue(v2, out _) )
                     continue;
                 else
                     sb.Append("<" + v1 + "," + v2 + ">");
             }
 
-            res.AddResponse(Dest.client, sb.ToString());
+            // TODO: wait for client to recognize long strings
+            res.AddResponse(Dest.client, "");//sb.ToString());
             return res;
         }
 
@@ -182,16 +191,31 @@ namespace RAC.Operations
         private ((string, string), string) lookup(string v1, string v2)
         {
 
-            if (lookup(v1) == (null, null) || lookup(v2) == (null, null))
-                return ((null, null), null);
-
-            foreach (var item in this.payload.edges)
+            if (checktwovertices(v1, v2))
             {
-                if (item.Item1.v1 == v1 && item.Item1.v2 == v2)
-                    return item;
+                foreach (var item in this.payload.edges)
+                {
+                    if (item.Item1.v1 == v1 && item.Item1.v2 == v2)
+                        return item;
+                }
             }
 
             return ((null, null), null);
+        }
+
+        private bool checktwovertices(string v1, string v2)
+        {
+            bool found1 = false, found2 = false;
+            foreach (var item in this.payload.vertices)
+            {
+                if (item.value == v1)
+                    found1 = true;
+                else if (item.value == v2)
+                    found2 = true;
+            }
+
+            return found1 && found2;
+
         }
 
         public override Responses Synchronization()
@@ -199,6 +223,8 @@ namespace RAC.Operations
             string type = this.parameters.GetParam<string>(0);
             string update = this.parameters.GetParam<string>(1);
             var updateSplit = update.Split(",").Select(x => x.Trim(')', '(', ' ')).ToArray();
+            
+
 
             switch (type)
             {
@@ -229,7 +255,9 @@ namespace RAC.Operations
 
         private void GenerateSyncRes(ref Responses res, string type, string update)
         {
-            Parameters syncPm = new Parameters(2);
+            Parameters syncPm;
+            syncPm = new Parameters(2);
+
 
             // type: 
             // "n": new graph
@@ -240,6 +268,7 @@ namespace RAC.Operations
             syncPm.AddParam(0, type);
             // effect-update msg
             syncPm.AddParam(1, update);
+
 
             string broadcast = Parser.BuildCommand(this.typecode, "y", this.uid, syncPm);
             res.AddResponse(Dest.broadcast, broadcast, false);

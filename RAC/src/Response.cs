@@ -65,15 +65,15 @@ namespace RAC
                 string content = this.contents[i];
 
                 MessagePacket msg = new MessagePacket(content, dest);
-                msg.connection = to;    
-                        Global.server.clientRespQueue.Post(msg);
+                msg.connection = to;
+                Global.server.clientRespQueue.Post(msg);
             }
 
 
         }
 
 
-        public override string ToString() 
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder(256);
             for (int i = 0; i < this.contentLength; i++)
