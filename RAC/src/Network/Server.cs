@@ -20,7 +20,7 @@ namespace RAC.Network
         private BufferBlock<MessagePacket> reqQueue;
         private BufferBlock<MessagePacket> respQueue;
         //private NetCoreServer.Buffer cache;
-        private List<byte> cache;
+        
         public string clientIP { get; private set; }
 
 
@@ -41,24 +41,109 @@ namespace RAC.Network
 
         }
 
+        private List<byte> cache;
+        int state = 0; // 0 = searching for 'f', 1 = completeting header, 2 = completetting content 
+        int headerReadCount, contentReadCount;
+        byte[] headerRead = new byte[MessagePacket.HEADER_SIZE - 1];
+        byte[] contentRead;
+
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            //cache.Append(buffer, (int)offset, (int)size);
-            byte[] temp = new byte[size];
-            Array.Copy(buffer, (int)offset, temp, 0, (int)size);
-            cache.AddRange(temp);
 
-            DEBUG("Receiving the following message with length: " + size + " bytes \n" + System.Text.Encoding.Default.GetString(temp));
-            MessagePacket msg;
-            int handledSize = MessagePacket.ParseReceivedMessage(cache.ToArray(), this, out msg);
+            // byte[] temp = new byte[size];
+            // Array.Copy(buffer, (int)offset, temp, 0, (int)size);
+            // cache.AddRange(temp);
 
-            if (msg is not null)
-                this.reqQueue.Post<MessagePacket>(msg);
+            // DEBUG("Receiving the following message with length: " + size + " bytes \n" + System.Text.Encoding.Default.GetString(temp));
+            // MessagePacket msg;
+            // int handledSize = MessagePacket.ParseReceivedMessage(cache.ToArray(), this, out msg);
 
-            if (handledSize == cache.Count)
-                cache.Clear();
-            else
-                cache.RemoveRange(0, handledSize);
+            // if (msg is not null)
+            //     this.reqQueue.Post<MessagePacket>(msg);
+
+            // if (handledSize == cache.Count)
+            //     cache.Clear();
+            // else
+            //     cache.RemoveRange(0, handledSize);
+
+            //Console.WriteLine("new stuffs");
+
+            int leftToRead;
+            for (long i = offset; i < offset + size; i++)
+            {
+                if (state == 0)
+                {
+                    //Console.WriteLine("0");
+                    if (buffer[i] == '\f')
+                        state = 1;
+                }
+                else if (state == 1)
+                {
+                    leftToRead = MessagePacket.HEADER_SIZE - 1 - headerReadCount;
+
+                    if (i + leftToRead > size)
+                    {
+                        //Console.WriteLine("1.11");
+                        System.Buffer.BlockCopy(buffer, (int)i, headerRead, headerReadCount, (int)(size - i));
+                        //Console.WriteLine("1.12");
+                        headerReadCount += (int)(size - i);
+                    }
+                    else
+                    {
+                        // finished reading header
+                        //Console.WriteLine("1.21");
+                        System.Buffer.BlockCopy(buffer, (int)i, headerRead, headerReadCount, leftToRead);
+                        //Console.WriteLine("1.22");
+                        headerReadCount += leftToRead;
+                        
+                        state = 2;
+                    }
+
+                    i += leftToRead - 1;
+                }
+                else if (state == 2)
+                {
+
+                    MsgSrc src = (MsgSrc)BitConverter.ToInt32(headerRead);
+                    int contentlen = BitConverter.ToInt32(headerRead, (MessagePacket.NUM_FIELDS - 1) * 4);
+                    
+                    if (contentReadCount == 0)
+                    {
+                        // init buffer
+                        contentRead = new byte[contentlen];
+                    }
+
+                    leftToRead = contentlen - contentReadCount;
+                    //Console.WriteLine("2 " + contentReadCount + " " + contentlen + " " + leftToRead + " " + i + " " + size);
+                    if (i + leftToRead > size)
+                    {
+                        //Console.WriteLine("2.11");
+                        System.Buffer.BlockCopy(buffer, (int)i, contentRead, contentReadCount, (int)(size - i));
+                        //Console.WriteLine("2.12");
+                        contentReadCount += (int)(size - i);
+                    }                    
+                    else
+                    {
+                        // finished reading content
+                        //Console.WriteLine("2.21");
+                        System.Buffer.BlockCopy(buffer, (int)i, contentRead, contentReadCount, leftToRead);
+                        //Console.WriteLine("2.22");
+                        contentReadCount += leftToRead;
+
+                        MessagePacket msg = new MessagePacket(src, contentlen, Encoding.UTF8.GetString(contentRead), this);
+                        DEBUG("Recieveing msg:\n " + msg);
+                        this.reqQueue.Post<MessagePacket>(msg);
+                        
+                        state = 0;
+                        headerReadCount = 0;
+                        contentReadCount = 0;
+                    }
+                    i += leftToRead - 1;
+                }
+            }
+
+
+
         }
 
         protected override void OnDisconnected()
