@@ -82,6 +82,16 @@ namespace RAC
             AddNewAPI("ORSet", "Remove", "rm", "string");
             AddNewAPI("ORSet", "Synchronization", "y", "lists, lists");
 
+
+            // CRDT Graph
+            AddNewType("Graph", "g");
+            AddNewAPI("Graph", "GetValue", "g", "");
+            AddNewAPI("Graph", "SetValue", "s", "");
+            AddNewAPI("Graph", "AddVertex", "av", "string");
+            AddNewAPI("Graph", "RemoveVertex", "rv", "string");
+            AddNewAPI("Graph", "AddEdge", "ae", "string, string");
+            AddNewAPI("Graph", "RemoveEdge", "re", "string, string");
+            AddNewAPI("Graph", "Synchronization", "y", "string, string, string");
             
             // Reversible Graph
             AddNewType("RGraph", "rg");
