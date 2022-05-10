@@ -3,9 +3,7 @@ from client import *
 from startservers import *
 import random
 
-build_server()
-time.sleep(5)
-addresses = start_server(3)
+#build_server()
 
 def split_ipport(address):
 
@@ -34,8 +32,15 @@ def connect(addresses):
 def PNC_Test():
     
     pnc = []
-    connections = connect(addresses)
 
+    num_server = 3
+    
+    addresses = start_server(num_server)
+    #addresses = ['127.0.0.1:5000', '127.0.0.1:5001']
+
+    time.sleep(2)
+    connections = connect(addresses)
+    input()
     for i in range(len(addresses)):
         pnc.append(PNCounter(connections[i]))
 
@@ -45,7 +50,7 @@ def PNC_Test():
     time.sleep(1)
 
     for i in range(100):
-        server_id = i % 3
+        server_id = i % num_server
         num = random.randint(-10, 10)
         if (num < 0):
             res = pnc[server_id].dec("test", abs(num))

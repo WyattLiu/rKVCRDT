@@ -1,5 +1,5 @@
 #define DEBUG
-//#undef DEBUG
+#undef DEBUG
 
 using System;
 using System.Diagnostics;
@@ -51,11 +51,11 @@ namespace RAC.Errors
             return DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
         }
 
-        [Conditional("DEBUG")]
+        //[Conditional("DEBUG")]
         public static void DEBUG(string str)
         {
 #if DEBUG
-            Console.WriteLine("-DEBUG- {0}:\n{1} \n===========\n", Curtime(), str);
+            Console.Write("-DEBUG- {0}:\n{1} \n===========\n", Curtime(), str);
 #endif
         }
 
