@@ -13,20 +13,17 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 def plot_one_dir(dir_, label_):
     pts = []
-    i = 1
-    while(i < 10):
-        for file_ in os.listdir(dir_):
-            if file_.endswith(str(i) + "_lt.txt"):
-                csv_file = file_.replace("_lt.txt", "_tp.csv")
-                print(file_)
-                print(csv_file)
-                median_lt = (latency_analyzer(dir_+"/"+file_).get_res())[-1]
-                cmd = "cat " + dir_+"/" + csv_file + " | tail -n 1 | sed 's/,/ /g' | awk '{print $2}'"
-                stream = os.popen(cmd)
-                throughput = stream.read().strip()
-                print("(" + str(median_lt) + "," + str(throughput) + ")")
-                pts.append((median_lt, float(throughput)))
-        i += 1
+    for file_ in os.listdir(dir_):
+        if file_.endswith("_lt.txt"):
+            csv_file = file_.replace("_lt.txt", "_tp.csv")
+            print(file_)
+            print(csv_file)
+            median_lt = (latency_analyzer(dir_+"/"+file_).get_res())[-1]
+            cmd = "cat " + dir_+"/" + csv_file + " | tail -n 1 | sed 's/,/ /g' | awk '{print $2}'"
+            stream = os.popen(cmd)
+            throughput = stream.read().strip()
+            print("(" + str(median_lt) + "," + str(throughput) + ")")
+            pts.append((median_lt, float(throughput)))
     return pts
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -39,8 +36,8 @@ if __name__ == "__main__":
     plt.xlabel("Throughput (ops/s)")
     plt.ylabel("Median Latency (ms)")
     plt.grid(True)
-    ax1.set_xscale('log')
-    ax1.set_yscale('log')
+    #ax1.set_xscale('log')
+    #ax1.set_yscale('log')
 
     plt.xscale('log')
     plt.yscale('log')
@@ -49,7 +46,7 @@ if __name__ == "__main__":
             lines = file.readlines()
     for line in lines:
         cols = line.split()
-        print("Dir " + cols[0] + " label: " + cols[1])
+        print("Dir " + cols[0] + " label: " + cols[1] + " style: " + cols[2])
         pts = plot_one_dir(cols[0], cols[1])
         x = [item[1] for item in pts]
         y = [item[0] for item in pts]
@@ -59,12 +56,13 @@ if __name__ == "__main__":
         y.sort()
         x = np.array(x)
         y = np.array(y)
-        ax1.scatter(x, y, s=10, marker="o", label=str(cols[1]))
+        style = cols[2].split(",")
+        ax1.scatter(x, y, s=10, marker=style[0], label=str(cols[1]), color = style[1])
         newx = np.linspace(x.min(), x.max(), 300) 
         spl = make_interp_spline(x, y, k=1)
         smooth = spl(newx)
-        ax1.plot(newx, smooth)
+        ax1.plot(newx, smooth, color = style[1], linestyle = style[2])
 
-    plt.legend(loc='upper right');
+    plt.legend(loc='best');
     plt.savefig("lt-thr-plot.png", dpi = 300)
 
