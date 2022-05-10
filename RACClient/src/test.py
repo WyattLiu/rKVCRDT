@@ -42,7 +42,7 @@ if __name__ == "__main__":
     test = {
         "nodes_pre_server": 1,
         "use_server": 5,
-        "client_multiplier": [1],
+        "client_multiplier": [200],
 
         "typecode": "rc",
         "total_objects": [100],
@@ -57,11 +57,11 @@ if __name__ == "__main__":
         "target_throughput": 0
     }
 
-    #run_experiment(test, "client_multiplier", "total_objects", "test_1_client", SERVER_LIST, True)
+    run_experiment(test, "client_multiplier", "total_objects", "test_1_client", SERVER_LIST, True)
     test = {
         "nodes_pre_server": 1,
         "use_server": 5,
-        "client_multiplier": [1],
+        "client_multiplier": [100],
 
         "typecode": "rc",
         "total_objects": [100],

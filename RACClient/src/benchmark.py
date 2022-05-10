@@ -420,7 +420,6 @@ class TestRunner():
         workers_pool.starmap(self.worker, zip(self.crdts, works))
         workers_pool.close()
         workers_pool.join() 
-
     def worker(self, crdt, list_reqs):
         temp = []
         last_rid = {}
@@ -437,6 +436,7 @@ class TestRunner():
                 else:
                     try:
                         res = self.data.op_execute(crdt, req)
+                        # BUG fix after and 
                         if res[1][0] != "" and req[0] != "g":
                             last_rid[req[1]] = res[1][0] 
                     except Exception:
