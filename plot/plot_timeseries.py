@@ -13,13 +13,13 @@ from latency_analyzer import *
 
 if __name__ == "__main__":
     
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         raise ValueError('wrong arg')
     with open(sys.argv[1]) as file:
         lines = file.readlines()
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    
+    png_path = sys.argv[2]
     for line in lines:
         cols = line.split()
         print("lt file: " + cols[0] + " label: " + cols[1] + " args: " + cols[2])
@@ -40,8 +40,9 @@ if __name__ == "__main__":
         while(time < to_time):
             ops = la_obj.get_ops_of_time(time, time_span)
             thrput_per_s = len(ops) * 1000000000 / time_span
-            list_of_throughput.append((time - from_time, thrput_per_s))
+            list_of_throughput.append(((time - from_time)/1000000000, thrput_per_s))
             time += slice_interval
+        print(list_of_throughput)
         x = [item[0] for item in list_of_throughput]
         y = [item[1] for item in list_of_throughput]
         x = np.array(x)
@@ -56,5 +57,5 @@ if __name__ == "__main__":
     plt.ylabel("Throughput (ops/s)")
     plt.grid(True)
     plt.legend(loc='best');
-    plt.savefig("./thrput_series.png", dpi = 300)
+    plt.savefig(png_path, dpi = 300)
 

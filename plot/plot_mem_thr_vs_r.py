@@ -37,11 +37,12 @@ def plot_one_dir(dir_, label_, xoverride_path_):
     return pts
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         raise ValueError('wrong arg')
     print("Data dir: " + sys.argv[1])
     print("Override x dir: " + sys.argv[2])
     xoverride_path = sys.argv[2]
+    png_path = sys.argv[3]
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     #plt.xlim((0,100000))
@@ -73,5 +74,5 @@ if __name__ == "__main__":
         ax1.plot(newx, smooth, color = style[1], linestyle = style[2], label = str(cols[1]))
 
     plt.legend(loc='best');
-    plt.savefig("mem_vs_r.png", dpi = 300)
+    plt.savefig(png_path, dpi = 300)
 

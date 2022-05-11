@@ -34,7 +34,8 @@ if __name__ == "__main__":
         lines = file.readlines()
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    
+    png_path = sys.argv[2]
+
     for line in lines:
         cols = line.split()
         print("lt file: " + cols[0] + " label: " + cols[1] + " op: " + cols[2] + " style: " + cols[3])
@@ -53,5 +54,5 @@ if __name__ == "__main__":
     #plt.xscale('log')
     plt.ylim((0,1))
     plt.legend(loc='best');
-    plt.savefig("./cdf.png", dpi = 300)
+    plt.savefig(png_path, dpi = 300)
 

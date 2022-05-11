@@ -26,22 +26,24 @@ def plot_one_dir(dir_, label_):
             pts.append((median_lt, float(throughput)))
     return pts
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         raise ValueError('wrong arg')
     print("Data dir: " + sys.argv[1])
+    final_file_name = sys.argv[2]
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    #plt.xlim((0,100000))
-    #plt.ylim((0,1000))
     plt.xlabel("Throughput (ops/s)")
     plt.ylabel("Median Latency (ms)")
     plt.grid(True)
     #ax1.set_xscale('log')
     #ax1.set_yscale('log')
 
-    plt.xscale('log')
-    plt.yscale('log')
-
+    #plt.xscale('log')
+    #plt.yscale('log')
+    #plt.xlim(1E3,1E5)
+    #plt.ylim(0.1,8)
+    plt.xlim(980,46000)
+    
     with open(sys.argv[1]) as file:
             lines = file.readlines()
     for line in lines:
@@ -57,12 +59,12 @@ if __name__ == "__main__":
         x = np.array(x)
         y = np.array(y)
         style = cols[2].split(",")
-        ax1.scatter(x, y, s=10, marker=style[0], label=str(cols[1]), color = style[1])
+        ax1.scatter(x, y, s=8, marker=style[0], color = style[1])
         newx = np.linspace(x.min(), x.max(), 300) 
         spl = make_interp_spline(x, y, k=1)
         smooth = spl(newx)
-        ax1.plot(newx, smooth, color = style[1], linestyle = style[2])
+        ax1.plot(newx, smooth, color = style[1], linestyle = style[2], label=str(cols[1]))
 
     plt.legend(loc='best');
-    plt.savefig("lt-thr-plot.png", dpi = 300)
+    plt.savefig(final_file_name, dpi = 500)
 
